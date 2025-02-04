@@ -8,12 +8,14 @@ export const login = async (email, password) => {
       email,
       password,
     });
+    
     console.log('Response data:', response.data);
 
-    const {token, role, userName} = response.data; // Destructure response data
+    const { token, role, userName } = response.data;
 
-    if (token && role && userName) {
-      return {token, role, userName};
+    // Poprawiony warunek, który nie wymaga userName
+    if (token && role) {
+      return { token, role, userName: userName ?? "" }; // Jeśli undefined/null, ustaw pusty string
     } else {
       throw new Error('Invalid response format');
     }
@@ -22,6 +24,7 @@ export const login = async (email, password) => {
     throw new Error('Invalid login credentials');
   }
 };
+
 
 export const register = async (email, password) => {
   const response = await axios.post(`${API_URL}/auth/register`, {
