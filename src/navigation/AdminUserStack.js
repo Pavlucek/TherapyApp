@@ -8,7 +8,7 @@ const Stack = createStackNavigator();
 
 const AdminUserStack = () => {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator screenOptions={{ headerShown: true }}>
       <Stack.Screen name="UserList" component={UserListScreen} />
       <Stack.Screen name="RegisterUser" component={RegisterUserScreen} />
       <Stack.Screen name="EditUser" component={EditUserScreen} />

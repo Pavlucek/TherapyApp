@@ -8,7 +8,7 @@ const Stack = createStackNavigator();
 
 const AdminStatsStack = () => {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator screenOptions={{ headerShown: true }}>
       <Stack.Screen name="AdminStats" component={AdminStatsScreen} />
       <Stack.Screen name="AdminLogs" component={AdminLogsScreen} />
       <Stack.Screen name="ExportData" component={ExportDataScreen} />

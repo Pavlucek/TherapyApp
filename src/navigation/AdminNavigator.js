@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AdminUserStack from './AdminUserStack';
 import AdminAssignStack from './AdminAssignStack';
 import AdminStatsStack from './AdminStatsStack';
-
+import { AuthContext } from '../context/AuthContext';
+import { useNavigation } from '@react-navigation/native';
 
 const Tab = createBottomTabNavigator();
 
@@ -30,6 +31,16 @@ const getTabBarIcon = (routeName, focused, color, size) => {
 };
 
 const AdminNavigator = () => {
+  const { isAuthenticated } = useContext(AuthContext);
+  const navigation = useNavigation(); // ✅ Uzyskanie dostępu do nawigacji
+
+  // ✅ Automatyczne przekierowanie do ekranu logowania, jeśli użytkownik zostanie wylogowany
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigation.replace('Auth');
+    }
+  }, [isAuthenticated, navigation]);
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({

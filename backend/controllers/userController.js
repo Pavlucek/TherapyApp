@@ -156,6 +156,19 @@ const getMoodHistory = async (req, res) => {
   }
 };
 
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.findAll({
+      attributes: ['id', 'email', 'role'], // Pobiera tylko potrzebne pola
+    });
+
+    res.status(200).json(users);
+  } catch (error) {
+    console.error('Błąd pobierania użytkowników:', error);
+    res.status(500).json({ message: 'Błąd serwera' });
+  }
+};
+
 module.exports = {
   updateUserDetails,
   changePassword,
@@ -163,4 +176,5 @@ module.exports = {
   exportJournalData,
   getSessionHistory,
   getMoodHistory,
+  getAllUsers,
 };

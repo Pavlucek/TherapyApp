@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 
 const API_URL = 'http://localhost:3000';
 
@@ -8,13 +9,21 @@ export const login = async (email, password) => {
       email,
       password,
     });
-    
+
     console.log('Response data:', response.data);
 
     const { token, role, userName } = response.data;
 
-    // Poprawiony warunek, który nie wymaga userName
     if (token && role) {
+      // ✅ Dekodowanie tokena i logowanie daty wygaśnięcia
+      try {
+        const decoded = jwtDecode(token);
+        const expiryDate = new Date(decoded.exp * 1000); // Konwersja timestamp do daty
+        console.log(`✅ Token wygasa: ${expiryDate.toLocaleString()}`);
+      } catch (decodeError) {
+        console.error('❌ Błąd dekodowania tokena:', decodeError.message);
+      }
+
       return { token, role, userName: userName ?? "" }; // Jeśli undefined/null, ustaw pusty string
     } else {
       throw new Error('Invalid response format');

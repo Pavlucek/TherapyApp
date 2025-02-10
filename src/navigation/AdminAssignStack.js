@@ -7,7 +7,7 @@ const Stack = createStackNavigator();
 
 const AdminAssignStack = () => {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator screenOptions={{ headerShown: true }}>
       <Stack.Screen name="TherapistList" component={TherapistListScreen} />
       <Stack.Screen name="AssignPatient" component={AssignPatientScreen} />
     </Stack.Navigator>

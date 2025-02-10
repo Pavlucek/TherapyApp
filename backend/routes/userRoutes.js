@@ -38,4 +38,11 @@ router.get(
   userController.getMoodHistory,
 );
 
+router.get(
+  '/all',
+  authMiddleware(['admin']),
+  userController.getAllUsers
+);
+
+
 module.exports = router;
