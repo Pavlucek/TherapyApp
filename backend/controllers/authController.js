@@ -129,7 +129,6 @@ const registerPatient = async (req, res) => {
 };
 
 // Logowanie użytkownika
-// Logowanie użytkownika
 const loginUser = async (req, res) => {
   const {email, password} = req.body;
   try {

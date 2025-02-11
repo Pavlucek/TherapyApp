@@ -4,6 +4,51 @@ const {JournalEntry} = require('../models');
 const {Parser} = require('json2csv');
 const {Session} = require('../models');
 
+const getUserProfileByAdmin = async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Brak uprawnień' });
+  }
+  const userId = req.params.userId;
+  try {
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    let profileData = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    };
+
+    if (user.role === 'therapist') {
+      const therapist = await Therapist.findOne({ where: { user_id: userId } });
+      profileData = {
+        ...profileData,
+        phone: therapist ? therapist.phone : '',
+        address: therapist ? therapist.address : '',
+        specialization: therapist ? therapist.specialization : '',
+        date_of_birth: therapist ? therapist.date_of_birth : '',
+        gender: therapist ? therapist.gender : '',
+      };
+    } else if (user.role === 'patient') {
+      const patient = await Patient.findOne({ where: { user_id: userId } });
+      profileData = {
+        ...profileData,
+        name: patient ? patient.name : '',
+        contact: patient ? patient.contact : '',
+        address: patient ? patient.address : '',
+        date_of_birth: patient ? patient.date_of_birth : '',
+        gender: patient ? patient.gender : '',
+        emergency_contact: patient ? patient.emergency_contact : '',
+      };
+    }
+    return res.status(200).json(profileData);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+
 const updateUserDetails = async (req, res) => {
   const userId = req.user.id;
   const {
@@ -53,6 +98,77 @@ const updateUserDetails = async (req, res) => {
     res.status(500).json({error: error.message});
   }
 };
+
+const updateUserDetailsByAdmin = async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Brak uprawnień' });
+  }
+
+  const userId = req.params.userId;
+  const {
+    email,
+    name,
+    phone,
+    address,
+    specialization,
+    date_of_birth,
+    gender,
+    contact,
+    emergency_contact,
+  } = req.body;
+
+  try {
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.email = email || user.email;
+
+    if (user.role === 'therapist') {
+      const therapist = await Therapist.findOne({ where: { user_id: userId } });
+      if (!therapist) {
+        return res.status(404).json({ message: 'Therapist record not found' });
+      }
+      therapist.name = name || therapist.name;
+      therapist.phone = phone || therapist.phone;
+      therapist.address = address || therapist.address;
+      therapist.specialization = specialization || therapist.specialization;
+      therapist.date_of_birth = date_of_birth || therapist.date_of_birth;
+      therapist.gender = gender || therapist.gender;
+      await therapist.save();
+    } else if (user.role === 'patient') {
+      let patient = await Patient.findOne({ where: { user_id: userId } });
+      if (!patient) {
+        // Opcjonalnie: utwórz nowy rekord, jeśli go nie ma
+        patient = await Patient.create({
+          user_id: userId,
+          name: name || '',
+          contact: contact || '',
+          address: address || '',
+          date_of_birth: date_of_birth || '',
+          gender: gender || '',
+          emergency_contact: emergency_contact || '',
+          journal_access: false, // lub inna domyślna wartość
+        });
+      } else {
+        patient.name = name || patient.name;
+        patient.contact = contact || patient.contact;
+        patient.address = address || patient.address;
+        patient.date_of_birth = date_of_birth || patient.date_of_birth;
+        patient.gender = gender || patient.gender;
+        patient.emergency_contact = emergency_contact || patient.emergency_contact;
+        await patient.save();
+      }
+    }
+
+    await user.save();
+    return res.status(200).json({ message: 'User details updated successfully', user });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 
 const changePassword = async (req, res) => {
   const userId = req.user.id;
@@ -169,6 +285,68 @@ const getAllUsers = async (req, res) => {
   }
 };
 
+const getTherapists = async (req, res) => {
+  try {
+    const therapists = await User.findAll({
+      where: { role: 'therapist' },
+      attributes: ['id', 'email', 'role'], // podstawowe pola z modelu User
+      include: [{
+        model: Therapist,
+      }],
+    });
+    res.status(200).json(therapists);
+  } catch (error) {
+    console.error('Błąd pobierania terapeutów:', error);
+    res.status(500).json({ message: 'Błąd serwera' });
+  }
+};
+
+const getPatients = async (req, res) => {
+  try {
+    const patients = await User.findAll({
+      where: { role: 'patient' },
+      attributes: ['id', 'email', 'role'], // podstawowe pola z modelu User
+      include: [{
+        model: Patient,
+      }],
+    });
+    res.status(200).json(patients);
+  } catch (error) {
+    console.error('Błąd pobierania pacjentów:', error);
+    res.status(500).json({ message: 'Błąd serwera' });
+  }
+};
+
+// controllers/assignmentController.js
+const assignPatient = async (req, res) => {
+  const { therapistId, patientId } = req.body;
+  console.log('assignPatient - odebrane dane:', { therapistId, patientId }); // Log danych z żądania
+  try {
+    // Znajdź pacjenta
+    const patient = await Patient.findByPk(patientId);
+    if (!patient) {
+      console.error('Nie znaleziono pacjenta o id:', patientId);
+      return res.status(404).json({ message: 'Nie znaleziono pacjenta' });
+    }
+    // Znajdź terapeutę
+    const therapist = await Therapist.findByPk(therapistId);
+    if (!therapist) {
+      console.error('Nie znaleziono terapeuty o id:', therapistId);
+      return res.status(404).json({ message: 'Nie znaleziono terapeuty' });
+    }
+    // Aktualizuj rekord pacjenta
+    patient.therapist_id = therapistId;
+    await patient.save();
+
+    res.status(200).json({ message: 'Pacjent został przypisany pomyślnie', patient });
+  } catch (error) {
+    console.error('Błąd przy przypisywaniu pacjenta:', error);
+    res.status(500).json({ message: 'Błąd serwera' });
+  }
+};
+
+
+
 module.exports = {
   updateUserDetails,
   changePassword,
@@ -177,4 +355,9 @@ module.exports = {
   getSessionHistory,
   getMoodHistory,
   getAllUsers,
+  updateUserDetailsByAdmin,
+  getUserProfileByAdmin,
+  getTherapists,
+  assignPatient,
+  getPatients,
 };

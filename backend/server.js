@@ -6,7 +6,8 @@ const discussionBoardRoutes = require('./routes/discussionBoardRoutes');
 const userRoutes = require('./routes/userRoutes');
 const notesRoutes = require('./routes/notesRoutes');
 const journalRoutes = require('./routes/journalRoutes');
-const {sequelize} = require('./models');
+const StatsRoutes = require('./routes/statsRoutes');
+const { sequelize } = require('./models');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -20,6 +21,7 @@ app.use('/discussion-board', discussionBoardRoutes);
 app.use('/user', userRoutes);
 app.use('/notes', notesRoutes);
 app.use('/journal', journalRoutes);
+app.use('/api', StatsRoutes);
 
 // Start the server
 app.listen(port, async () => {
