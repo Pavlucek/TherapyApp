@@ -142,3 +142,28 @@ export const registerPatient = async (token, patientData) => {
     throw error;
   }
 };
+
+// Funkcja do zmiany hasła
+export const changePassword = async (token, oldPassword, newPassword) => {
+  try {
+    const response = await axios.put(
+      `${API_URL}/user/change-password`,
+      { oldPassword, newPassword },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (response.status === 200) {
+      return response.data;
+    } else {
+      throw new Error('Failed to change password');
+    }
+  } catch (error) {
+    console.error('Error changing password:', error.message);
+    throw new Error(error.response?.data?.message || 'Failed to change password');
+  }
+};

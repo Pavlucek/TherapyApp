@@ -13,13 +13,13 @@ const getTabBarIcon = (routeName, focused, color, size) => {
   let iconName;
 
   switch (routeName) {
-    case 'Users':
+    case 'Użytkownicy':
       iconName = focused ? 'people' : 'people-outline';
       break;
-    case 'Assignments':
+    case 'Przypisania':
       iconName = focused ? 'link' : 'link-outline';
       break;
-    case 'Statistics':
+    case 'Statystyki':
       iconName = focused ? 'bar-chart' : 'bar-chart-outline';
       break;
     default:
@@ -32,9 +32,8 @@ const getTabBarIcon = (routeName, focused, color, size) => {
 
 const AdminNavigator = () => {
   const { isAuthenticated } = useContext(AuthContext);
-  const navigation = useNavigation(); // ✅ Uzyskanie dostępu do nawigacji
+  const navigation = useNavigation();
 
-  // ✅ Automatyczne przekierowanie do ekranu logowania, jeśli użytkownik zostanie wylogowany
   useEffect(() => {
     if (!isAuthenticated) {
       navigation.replace('Auth');
@@ -45,6 +44,8 @@ const AdminNavigator = () => {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
+        headerBackTitleVisible: false, // Ukrywa tekst przycisku powrotu
+        headerTitle: '', // brak tytułu we wszystkich ekranach
         tabBarIcon: ({ focused, color, size }) =>
           getTabBarIcon(route.name, focused, color, size),
         tabBarActiveTintColor: '#42BCBA',
@@ -52,9 +53,9 @@ const AdminNavigator = () => {
         tabBarStyle: { backgroundColor: '#07435D' },
       })}
     >
-      <Tab.Screen name="Users" component={AdminUserStack} />
-      <Tab.Screen name="Assignments" component={AdminAssignStack} />
-      <Tab.Screen name="Statistics" component={AdminStatsStack} />
+      <Tab.Screen name="Użytkownicy" component={AdminUserStack} />
+      <Tab.Screen name="Przypisania" component={AdminAssignStack} />
+      <Tab.Screen name="Statystyki" component={AdminStatsStack} />
     </Tab.Navigator>
   );
 };

@@ -12,7 +12,9 @@ const AppNavigator = () => {
   const { isAuthenticated, user } = useContext(AuthContext);
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator screenOptions={{ 
+              headerBackTitleVisible: false, // Ukrywa tekst przycisku powrotu
+              headerShown: false }}>
       {isAuthenticated && user ? (
         user.role === 'therapist' ? (
           <Stack.Screen name="Therapist" component={TherapistNavigator} />

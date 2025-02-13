@@ -11,7 +11,10 @@ const Stack = createStackNavigator();
 
 const AdminUserStack = () => {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: true }}>
+    <Stack.Navigator screenOptions={{ 
+              headerBackTitleVisible: false, // Ukrywa tekst przycisku powrotu
+              headerTitle: '', // brak tytułu we wszystkich ekranach
+      headerShown: true }}>
       <Stack.Screen name="UserList" component={UserListScreen} />
       <Stack.Screen name="RegisterUser" component={RegisterUserChoiceScreen} />
       <Stack.Screen name="RegisterTherapist" component={RegisterTherapistScreen} />

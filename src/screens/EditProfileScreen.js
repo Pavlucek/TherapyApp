@@ -1,63 +1,82 @@
-import React, {useContext, useState} from 'react';
+import React, { useContext, useState } from 'react';
 import {
   Text,
   StyleSheet,
   TextInput,
-  Button,
+  TouchableOpacity,
   Alert,
   ScrollView,
+  Modal,
+  Button,
+  View,
+  Platform,
 } from 'react-native';
-import {AuthContext} from '../context/AuthContext';
-import {updateUserDetails} from '../services/authService'; // Import the update function
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Picker } from '@react-native-picker/picker';
+import { AuthContext } from '../context/AuthContext';
+import { updateUserDetails } from '../services/authService';
 
-const EditProfileScreen = ({navigation}) => {
-  const {user} = useContext(AuthContext);
+const EditProfileScreen = ({ navigation }) => {
+  const { user } = useContext(AuthContext);
   const [updatedUser, setUpdatedUser] = useState({
     name: user?.name || '',
     contact: '',
     address: '',
-    date_of_birth: '',
+    date_of_birth: null, // Przechowujemy datę jako obiekt Date (lub null)
     gender: '',
     emergency_contact: '',
   });
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showGenderPicker, setShowGenderPicker] = useState(false);
 
-  // Validation functions
-  const validateName = name => name.length >= 3 && name.length <= 30;
-  const validateContact = contact => contact.length > 0;
-  const validateAddress = address => address.length > 0;
-  const validateDateOfBirth = date => /^\d{4}-\d{2}-\d{2}$/.test(date);
-  const validateGender = gender =>
+  // Funkcja formatująca datę do postaci "RRRR-MM-DD"
+  const formatDate = (date) => {
+    if (!date) return '';
+    const year = date.getFullYear();
+    let month = date.getMonth() + 1;
+    let day = date.getDate();
+    if (month < 10) month = '0' + month;
+    if (day < 10) day = '0' + day;
+    return `${year}-${month}-${day}`;
+  };
+
+  // Funkcje walidujące
+  const validateName = (name) => name.length >= 3 && name.length <= 30;
+  const validateContact = (contact) => contact.length > 0;
+  const validateAddress = (address) => address.length > 0;
+  const validateDateOfBirth = (date) => date !== null;
+  const validateGender = (gender) =>
     ['male', 'female', 'other'].includes(gender.toLowerCase());
-  const validateEmergencyContact = emergency_contact =>
+  const validateEmergencyContact = (emergency_contact) =>
     emergency_contact.length > 0;
 
   const handleSaveChanges = async () => {
     if (!validateName(updatedUser.name)) {
-      Alert.alert('Invalid name', 'Name should be between 3 and 30 characters');
+      Alert.alert(
+        'Nieprawidłowe imię',
+        'Imię powinno mieć od 3 do 30 znaków'
+      );
       return;
     }
     if (updatedUser.contact && !validateContact(updatedUser.contact)) {
-      Alert.alert('Invalid contact', 'Please enter a valid contact');
+      Alert.alert('Nieprawidłowy kontakt', 'Wprowadź poprawny kontakt');
       return;
     }
     if (updatedUser.address && !validateAddress(updatedUser.address)) {
-      Alert.alert('Invalid address', 'Please enter a valid address');
+      Alert.alert('Nieprawidłowy adres', 'Wprowadź poprawny adres');
       return;
     }
-    if (
-      updatedUser.date_of_birth &&
-      !validateDateOfBirth(updatedUser.date_of_birth)
-    ) {
+    if (updatedUser.date_of_birth && !validateDateOfBirth(updatedUser.date_of_birth)) {
       Alert.alert(
-        'Invalid date of birth',
-        'Please enter a valid date in the format YYYY-MM-DD',
+        'Nieprawidłowa data urodzenia',
+        'Wybierz poprawną datę urodzenia'
       );
       return;
     }
     if (updatedUser.gender && !validateGender(updatedUser.gender)) {
       Alert.alert(
-        'Invalid gender',
-        'Please select a valid gender (male, female, or other)',
+        'Nieprawidłowa płeć',
+        'Wybierz poprawną płeć (mężczyzna, kobieta, inna)'
       );
       return;
     }
@@ -66,66 +85,151 @@ const EditProfileScreen = ({navigation}) => {
       !validateEmergencyContact(updatedUser.emergency_contact)
     ) {
       Alert.alert(
-        'Invalid emergency contact',
-        'Please enter a valid emergency contact',
+        'Nieprawidłowy kontakt awaryjny',
+        'Wprowadź poprawny kontakt awaryjny'
       );
       return;
     }
 
     try {
-      await updateUserDetails(user.token, updatedUser); // No need to store the response
-      Alert.alert('Success', 'User details updated successfully');
-      navigation.goBack(); // Go back to the previous screen
+      await updateUserDetails(user.token, {
+        ...updatedUser,
+        // Przekazujemy datę urodzenia jako sformatowany ciąg znaków
+        date_of_birth: updatedUser.date_of_birth
+          ? formatDate(updatedUser.date_of_birth)
+          : '',
+      });
+      Alert.alert('Sukces', 'Dane użytkownika zostały zaktualizowane poprawnie');
+      navigation.goBack();
     } catch (error) {
-      Alert.alert('Error', 'Failed to update user details');
+      Alert.alert('Błąd', 'Nie udało się zaktualizować danych użytkownika');
     }
+  };
+
+  const onDateChange = (event, selectedDate) => {
+    if (selectedDate) {
+      setUpdatedUser({ ...updatedUser, date_of_birth: selectedDate });
+    }
+    setShowDatePicker(false);
   };
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Edit Profile</Text>
+      <Text style={styles.title}>Edytuj Profil</Text>
+
       <TextInput
         style={styles.input}
-        placeholder="Name"
+        placeholder="Imię i nazwisko"
+        placeholderTextColor="#777"
         value={updatedUser.name}
-        onChangeText={text => setUpdatedUser({...updatedUser, name: text})}
+        onChangeText={(text) =>
+          setUpdatedUser({ ...updatedUser, name: text })
+        }
       />
       <TextInput
         style={styles.input}
-        placeholder="Contact"
+        placeholder="Kontakt"
+        placeholderTextColor="#777"
         value={updatedUser.contact}
-        onChangeText={text => setUpdatedUser({...updatedUser, contact: text})}
+        onChangeText={(text) =>
+          setUpdatedUser({ ...updatedUser, contact: text })
+        }
       />
       <TextInput
         style={styles.input}
-        placeholder="Address"
+        placeholder="Adres"
+        placeholderTextColor="#777"
         value={updatedUser.address}
-        onChangeText={text => setUpdatedUser({...updatedUser, address: text})}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Date of Birth (YYYY-MM-DD)"
-        value={updatedUser.date_of_birth}
-        onChangeText={text =>
-          setUpdatedUser({...updatedUser, date_of_birth: text})
+        onChangeText={(text) =>
+          setUpdatedUser({ ...updatedUser, address: text })
         }
       />
+
+      {/* Wybór daty urodzenia */}
+      <Text style={styles.label}>Data urodzenia</Text>
+      <TouchableOpacity
+        style={styles.pickerButton}
+        onPress={() => setShowDatePicker(true)}
+      >
+        <Text style={styles.pickerButtonText}>
+          {updatedUser.date_of_birth
+            ? formatDate(updatedUser.date_of_birth)
+            : 'Wybierz datę urodzenia'}
+        </Text>
+      </TouchableOpacity>
+      {showDatePicker && (
+        <DateTimePicker
+          value={updatedUser.date_of_birth || new Date()}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'inline' : 'default'}
+          onChange={onDateChange}
+          maximumDate={new Date()}
+        />
+      )}
+
+      {/* Wybór płci */}
+      <Text style={styles.label}>Płeć</Text>
+      <TouchableOpacity
+        style={styles.pickerButton}
+        onPress={() => setShowGenderPicker(true)}
+      >
+        <Text style={styles.pickerButtonText}>
+          {updatedUser.gender
+            ? updatedUser.gender === 'male'
+              ? 'Mężczyzna'
+              : updatedUser.gender === 'female'
+              ? 'Kobieta'
+              : 'Inna'
+            : 'Wybierz płeć'}
+        </Text>
+      </TouchableOpacity>
+      <Modal
+        visible={showGenderPicker}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowGenderPicker(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Wybierz płeć</Text>
+            <Picker
+              selectedValue={updatedUser.gender}
+              onValueChange={(itemValue) => {
+                setUpdatedUser({ ...updatedUser, gender: itemValue });
+                setShowGenderPicker(false);
+              }}
+            >
+              <Picker.Item label="Mężczyzna" value="male" />
+              <Picker.Item label="Kobieta" value="female" />
+              <Picker.Item label="Inna" value="other" />
+            </Picker>
+            <Button title="Zamknij" onPress={() => setShowGenderPicker(false)} />
+          </View>
+        </View>
+      </Modal>
+
       <TextInput
         style={styles.input}
-        placeholder="Gender (male, female, other)"
-        value={updatedUser.gender}
-        onChangeText={text => setUpdatedUser({...updatedUser, gender: text})}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Emergency Contact"
+        placeholder="Kontakt awaryjny"
+        placeholderTextColor="#777"
         value={updatedUser.emergency_contact}
-        onChangeText={text =>
-          setUpdatedUser({...updatedUser, emergency_contact: text})
+        onChangeText={(text) =>
+          setUpdatedUser({ ...updatedUser, emergency_contact: text })
         }
       />
-      <Button title="Save Changes" onPress={handleSaveChanges} />
-      <Button title="Cancel" onPress={() => navigation.goBack()} />
+
+      <TouchableOpacity
+        style={styles.primaryButton}
+        onPress={handleSaveChanges}
+      >
+        <Text style={styles.primaryButtonText}>Zapisz zmiany</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.secondaryButton}
+        onPress={() => navigation.goBack()}
+      >
+        <Text style={styles.secondaryButtonText}>Anuluj</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 };
@@ -133,20 +237,86 @@ const EditProfileScreen = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f5f5f9',
     padding: 20,
-    backgroundColor: '#ffffff',
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
-    color: '#07435D',
+    color: '#0b4a60',
+    textAlign: 'center',
     marginBottom: 20,
   },
+  label: {
+    fontSize: 16,
+    color: '#0b4a60',
+    marginVertical: 8,
+  },
   input: {
-    borderBottomWidth: 1,
-    borderColor: '#ccc',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#0b4a60',
+    borderRadius: 8,
     padding: 10,
-    marginVertical: 10,
+    marginVertical: 8,
+    fontSize: 16,
+    color: '#0b4a60',
+  },
+  pickerButton: {
+    backgroundColor: '#d8f3f6',
+    borderWidth: 1,
+    borderColor: '#0b4a60',
+    borderRadius: 8,
+    padding: 12,
+    marginVertical: 8,
+  },
+  pickerButtonText: {
+    fontSize: 16,
+    color: '#0b4a60',
+  },
+  primaryButton: {
+    backgroundColor: '#0b4a60',
+    paddingVertical: 15,
+    borderRadius: 25,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  primaryButtonText: {
+    color: '#f5f5f9',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  secondaryButton: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#0b4a60',
+    paddingVertical: 15,
+    borderRadius: 25,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  secondaryButtonText: {
+    color: '#0b4a60',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    backgroundColor: '#d8f3f6',
+    marginHorizontal: 20,
+    borderRadius: 10,
+    padding: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#0b4a60',
+    marginBottom: 10,
+    textAlign: 'center',
   },
 });
 

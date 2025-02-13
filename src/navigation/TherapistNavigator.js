@@ -37,7 +37,9 @@ const TherapistNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={({route}) => ({
+        headerBackTitleVisible: false, // Ukrywa tekst przycisku powrotu
         headerShown: false,
+        headerTitle: '', // brak tytułu we wszystkich ekranach
         tabBarIcon: ({focused, color, size}) =>
           getTabBarIcon(route.name, focused, color, size), // Use the external function
         tabBarActiveTintColor: '#42BCBA', // Color of active icons
