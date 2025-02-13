@@ -1,17 +1,16 @@
-// styles/buttonStyles.js
 import { StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
-  loginButton: {
-    backgroundColor: '#07435D', // Kolor tła
-    paddingVertical: 10, // Wysokość przycisku
-    paddingHorizontal: 20,
-    borderRadius: 25, // Zaokrąglone rogi
+  primaryButton: {
+    backgroundColor: '#0b4a60', // Mocny, akcentowy kolor
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    borderRadius: 25,
     alignItems: 'center',
-    marginTop: 20,
+    marginVertical: 10,
   },
-  loginButtonText: {
-    color: 'white', // Biały kolor tekstu
+  primaryButtonText: {
+    color: '#f5f5f9', // Jasny kolor dla kontrastu
     fontSize: 16,
     fontWeight: 'bold',
   },

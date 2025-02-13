@@ -1,8 +1,7 @@
 // src/screens/AdminStatsScreen.js
-
 import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, ActivityIndicator, TouchableOpacity, StyleSheet } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons'; // Import ikon
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { AuthContext } from '../../context/AuthContext';
 import { fetchStats } from '../../api/statsApi';
 
@@ -15,7 +14,6 @@ const AdminStatsScreen = () => {
   useEffect(() => {
     const loadStats = async () => {
       try {
-        // Jeśli backend wymaga tokena, przekazujemy authUser.token
         const data = await fetchStats(authUser?.token);
         setStats(data);
       } catch (err) {
@@ -31,7 +29,7 @@ const AdminStatsScreen = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff"/>
+        <ActivityIndicator size="large" color="#0b4a60" />
       </View>
     );
   }
@@ -47,17 +45,24 @@ const AdminStatsScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Statystyki</Text>
-      
+
       <View style={styles.statsContainer}>
-        <Text style={styles.statItem}>Całkowita liczba użytkowników: {stats.totalUsers}</Text>
-        <Text style={styles.statItem}>Liczba terapeutów: {stats.totalTherapists}</Text>
-        <Text style={styles.statItem}>Liczba pacjentów: {stats.totalPatients}</Text>
-        <Text style={styles.statItem}>Łączna liczba sesji: {stats.totalSessions}</Text>
+        <View style={styles.statCard}>
+          <Text style={styles.statText}>Całkowita liczba użytkowników: {stats.totalUsers}</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statText}>Liczba terapeutów: {stats.totalTherapists}</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statText}>Liczba pacjentów: {stats.totalPatients}</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statText}>Łączna liczba sesji: {stats.totalSessions}</Text>
+        </View>
       </View>
-      
-      {/* Przycisk wylogowania z ikoną */}
+
       <TouchableOpacity onPress={logout} style={styles.logoutButton}>
-        <Ionicons name="log-out-outline" size={24} color="#FF5733" />
+        <Ionicons name="log-out-outline" size={24} color="#0b4a60" />
         <Text style={styles.logoutText}>Wyloguj</Text>
       </TouchableOpacity>
     </View>
@@ -67,24 +72,38 @@ const AdminStatsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f5f5f9', // jasne, neutralne tło
     padding: 20,
-    backgroundColor: '#fff',
-    alignItems: 'center',      // Wyśrodkowanie elementów poziomo
-    justifyContent: 'center',  // Wyśrodkowanie elementów pionowo
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
-    marginBottom: 20,
+    color: '#0b4a60',
     textAlign: 'center',
+    marginBottom: 20,
   },
   statsContainer: {
+    width: '100%',
     marginBottom: 30,
     alignItems: 'center',
   },
-  statItem: {
+  statCard: {
+    backgroundColor: '#d8f3f6', // tło kart
+    padding: 15,
+    borderRadius: 10,
+    marginVertical: 8,
+    width: '100%',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  statText: {
     fontSize: 18,
-    marginVertical: 5,
+    color: '#0b4a60',
+    textAlign: 'center',
   },
   loadingContainer: {
     flex: 1,
@@ -103,11 +122,16 @@ const styles = StyleSheet.create({
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#d8f3f6',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 25,
   },
   logoutText: {
     fontSize: 16,
-    color: '#FF5733',
+    color: '#0b4a60',
     marginLeft: 8,
+    fontWeight: 'bold',
   },
 });
 

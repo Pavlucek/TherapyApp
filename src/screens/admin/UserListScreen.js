@@ -8,40 +8,51 @@ const UserListScreen = ({ navigation }) => {
   const { user } = useContext(AuthContext);
   const { users, loading } = useUsers(user?.token);
 
+  // Funkcja mapująca role na polskie odpowiedniki
+  const getPolishRole = (role) => {
+    switch (role) {
+      case 'therapist':
+        return 'Terapeuta';
+      case 'patient':
+        return 'Pacjent';
+      case 'admin':
+        return 'Administrator';
+      default:
+        return role;
+    }
+  };
+
   const renderUserItem = ({ item }) => (
-    <View style={styles.userItem}>
+    <View style={styles.userCard}>
       <View style={styles.userInfo}>
-        <Text style={styles.userText}>
-          {item.email}
-          {'\n'}role: {item.role}
-        </Text>
+        <Text style={styles.userEmail}>{item.email}</Text>
+        <Text style={styles.userRole}>Rola: {getPolishRole(item.role)}</Text>
       </View>
       <TouchableOpacity
-        style={buttonStyles.loginButton}
+        style={buttonStyles.primaryButton}
         onPress={() => {
-          console.log('User ID:', item.id);
+          console.log('ID użytkownika:', item.id);
           navigation.navigate('EditUser', { userId: item.id });
         }}
       >
-        <Text style={buttonStyles.loginButtonText}>Edit</Text>
+        <Text style={buttonStyles.primaryButtonText}>Edytuj</Text>
       </TouchableOpacity>
     </View>
   );
 
-
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        style={buttonStyles.loginButton}
+        style={buttonStyles.primaryButton}
         onPress={() => navigation.navigate('RegisterUser')}
       >
-        <Text style={buttonStyles.loginButtonText}>Add User</Text>
+        <Text style={buttonStyles.primaryButtonText}>Dodaj użytkownika</Text>
       </TouchableOpacity>
 
-      <Text style={styles.title}>User List</Text>
+      <Text style={styles.title}>Lista użytkowników</Text>
 
       {loading ? (
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color="#0b4a60" />
       ) : (
         <FlatList
           contentContainerStyle={styles.listContainer}
@@ -57,33 +68,45 @@ const UserListScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
+    backgroundColor: '#f5f5f9', // Jasne, neutralne tło
+    padding: 16,
   },
   title: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginVertical: 10,
-    marginTop: 20,
+    color: '#0b4a60', // Akcent kolorystyczny
     textAlign: 'center',
+    marginVertical: 20,
   },
   listContainer: {
-    alignItems: 'center', // Wyśrodkowanie zawartości listy
+    paddingBottom: 20,
   },
-  userItem: {
-    padding: 10,
-    width: '100%',
-    flexDirection: 'row',           // Ustawia elementy w jednym wierszu
-    justifyContent: 'space-between',// Rozmieszcza tekst po lewej, przycisk po prawej
-    alignItems: 'center',           // Centruje elementy w pionie
-    // Usunięto borderBottomWidth i borderColor, aby nie było szarych linii
+  userCard: {
+    backgroundColor: '#d8f3f6', // Delikatne tło kart
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   userInfo: {
-    flex: 1,             // Tekst zajmuje całą dostępną przestrzeń po lewej
-    marginRight: 10,     // Dodaje odstęp między tekstem a przyciskiem
+    flex: 1,
+    marginRight: 10,
   },
-  userText: {
+  userEmail: {
     fontSize: 16,
-    textAlign: 'left',
+    fontWeight: '600',
+    color: '#0b4a60',
+  },
+  userRole: {
+    fontSize: 14,
+    color: '#0b4a60',
+    marginTop: 4,
   },
 });
 

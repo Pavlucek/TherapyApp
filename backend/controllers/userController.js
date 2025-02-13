@@ -289,9 +289,10 @@ const getTherapists = async (req, res) => {
   try {
     const therapists = await User.findAll({
       where: { role: 'therapist' },
-      attributes: ['id', 'email', 'role'], // podstawowe pola z modelu User
+      attributes: ['id', 'email', 'role'],
       include: [{
         model: Therapist,
+        include: [{ model: Patient, as: 'Patients' }],
       }],
     });
     res.status(200).json(therapists);
@@ -300,6 +301,7 @@ const getTherapists = async (req, res) => {
     res.status(500).json({ message: 'Błąd serwera' });
   }
 };
+
 
 const getPatients = async (req, res) => {
   try {

@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext } from 'react';
 import {
   View,
   Text,
-  Button,
   ActivityIndicator,
   StyleSheet,
   Alert,
@@ -23,11 +22,10 @@ const AssignPatientScreen = () => {
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Sterowanie modalami dla pickera
+  // Sterowanie widocznością modalów dla pickera
   const [showTherapistModal, setShowTherapistModal] = useState(false);
   const [showPatientModal, setShowPatientModal] = useState(false);
 
-  // Ładowanie danych: listy terapeutów i pacjentów
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -42,6 +40,7 @@ const AssignPatientScreen = () => {
         setLoading(false);
       }
     };
+
     if (authUser && authUser.token) {
       loadData();
     }
@@ -64,18 +63,18 @@ const AssignPatientScreen = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color="#0b4a60" />
       </View>
     );
   }
 
-  // Przy wyświetlaniu aktualnie wybranego terapeuty wyszukujemy rekord na podstawie właściwego identyfikatora z tabeli Therapist
+  // Wyszukiwanie etykiety dla wybranego terapeuty
   const selectedTherapistLabel = selectedTherapist
     ? therapists.find((t) => t.Therapist && t.Therapist.id === selectedTherapist)?.Therapist.name ||
       therapists.find((t) => t.Therapist && t.Therapist.id === selectedTherapist)?.email
     : 'Wybierz...';
 
-  // Podobnie dla pacjenta – zakładamy, że wartość Picker itemu to patient.Patient.id
+  // Wyszukiwanie etykiety dla wybranego pacjenta
   const selectedPatientLabel = selectedPatient
     ? patients.find((p) => p.Patient && p.Patient.id === selectedPatient)?.Patient.name ||
       patients.find((p) => p.Patient && p.Patient.id === selectedPatient)?.email
@@ -117,7 +116,12 @@ const AssignPatientScreen = () => {
                 />
               ))}
             </Picker>
-            <Button title="Zamknij" onPress={() => setShowTherapistModal(false)} />
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setShowTherapistModal(false)}
+            >
+              <Text style={styles.modalCloseButtonText}>Zamknij</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -154,12 +158,20 @@ const AssignPatientScreen = () => {
                 />
               ))}
             </Picker>
-            <Button title="Zamknij" onPress={() => setShowPatientModal(false)} />
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setShowPatientModal(false)}
+            >
+              <Text style={styles.modalCloseButtonText}>Zamknij</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
 
-      <Button title="Przypisz pacjenta" onPress={handleAssignPatient} />
+      {/* Przycisk przypisania pacjenta */}
+      <TouchableOpacity style={styles.assignButton} onPress={handleAssignPatient}>
+        <Text style={styles.assignButtonText}>Przypisz pacjenta</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -167,33 +179,38 @@ const AssignPatientScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f5f5f9', // Jasne, neutralne tło
     padding: 16,
-    backgroundColor: '#fff',
   },
   loadingContainer: {
     flex: 1,
+    backgroundColor: '#f5f5f9',
     justifyContent: 'center',
     alignItems: 'center',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
+    color: '#0b4a60',
+    textAlign: 'center',
+    marginVertical: 20,
   },
   label: {
     fontSize: 16,
+    color: '#0b4a60',
     marginTop: 10,
   },
   dropdownButton: {
+    backgroundColor: '#d8f3f6',
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: '#0b4a60',
     padding: 12,
+    borderRadius: 8,
     marginTop: 5,
-    borderRadius: 4,
   },
   dropdownButtonText: {
     fontSize: 16,
-    color: '#333',
+    color: '#0b4a60',
   },
   picker: {
     width: '100%',
@@ -204,7 +221,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: '#d8f3f6',
     marginHorizontal: 20,
     borderRadius: 8,
     padding: 20,
@@ -212,7 +229,32 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#0b4a60',
     marginBottom: 10,
+  },
+  modalCloseButton: {
+    backgroundColor: '#0b4a60',
+    paddingVertical: 10,
+    borderRadius: 25,
+    alignItems: 'center',
+    marginTop: 15,
+  },
+  modalCloseButtonText: {
+    color: '#f5f5f9',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  assignButton: {
+    backgroundColor: '#0b4a60',
+    paddingVertical: 15,
+    borderRadius: 25,
+    alignItems: 'center',
+    marginTop: 30,
+  },
+  assignButtonText: {
+    color: '#f5f5f9',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 
