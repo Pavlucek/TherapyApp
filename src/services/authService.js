@@ -12,19 +12,20 @@ export const login = async (email, password) => {
 
     console.log('Response data:', response.data);
 
-    const { token, role, userName } = response.data;
+    // Destructure additional fields from the response
+    const { token, role, userName, patientId, therapistId, patients } = response.data;
 
     if (token && role) {
-      // ✅ Dekodowanie tokena i logowanie daty wygaśnięcia
       try {
         const decoded = jwtDecode(token);
-        const expiryDate = new Date(decoded.exp * 1000); // Konwersja timestamp do daty
-        console.log(`✅ Token wygasa: ${expiryDate.toLocaleString()}`);
+        const expiryDate = new Date(decoded.exp * 1000);
+        console.log(`Token expires: ${expiryDate.toLocaleString()}`);
       } catch (decodeError) {
-        console.error('❌ Błąd dekodowania tokena:', decodeError.message);
+        console.error('Error decoding token:', decodeError.message);
       }
 
-      return { token, role, userName: userName ?? '' }; // Jeśli undefined/null, ustaw pusty string
+      // Return the complete user data
+      return { token, role, userName: userName ?? '', patientId, therapistId, patients };
     } else {
       throw new Error('Invalid response format');
     }
@@ -33,7 +34,6 @@ export const login = async (email, password) => {
     throw new Error('Invalid login credentials');
   }
 };
-
 
 export const register = async (email, password) => {
   const response = await axios.post(`${API_URL}/auth/register`, {
@@ -44,7 +44,7 @@ export const register = async (email, password) => {
 };
 
 export const getUserDetails = async (adminToken, userId) => {
-  console.log(`Pobieranie danych dla userId: ${userId} z URL: ${API_URL}/user/admin/users/${userId}`);
+  console.log(`Fetching user details for userId: ${userId} from ${API_URL}/user/admin/users/${userId}`);
   const response = await fetch(`${API_URL}/user/admin/users/${userId}`, {
     method: 'GET',
     headers: {
@@ -52,17 +52,16 @@ export const getUserDetails = async (adminToken, userId) => {
       'Content-Type': 'application/json',
     },
   });
-  console.log('Status odpowiedzi:', response.status);
+  console.log('Response status:', response.status);
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('Odpowiedź błędu:', errorText);
-    throw new Error('Nie udało się pobrać danych użytkownika');
+    console.error('Error response:', errorText);
+    throw new Error('Failed to fetch user details');
   }
   const data = await response.json();
-  console.log('Otrzymane dane:', data);
+  console.log('Received data:', data);
   return data;
 };
-
 
 export const updateUserDetailsByAdmin = async (adminToken, userId, userData) => {
   const response = await fetch(`${API_URL}/user/admin/users/${userId}`, {
@@ -74,7 +73,7 @@ export const updateUserDetailsByAdmin = async (adminToken, userId, userData) => 
     body: JSON.stringify(userData),
   });
   if (!response.ok) {
-    throw new Error('Nie udało się zaktualizować danych użytkownika');
+    throw new Error('Failed to update user details');
   }
   return response.json();
 };
@@ -103,7 +102,6 @@ export const updateUserDetails = async (token, updatedUser) => {
   }
 };
 
-// Rejestracja terapeuty – funkcja wywoływana przez administratora
 export const registerTherapist = async (adminToken, therapistData) => {
   try {
     const response = await axios.post(
@@ -123,7 +121,6 @@ export const registerTherapist = async (adminToken, therapistData) => {
   }
 };
 
-// Rejestracja pacjenta – funkcja wywoływana przez administratora lub terapeutę
 export const registerPatient = async (token, patientData) => {
   try {
     const response = await axios.post(
@@ -143,7 +140,6 @@ export const registerPatient = async (token, patientData) => {
   }
 };
 
-// Funkcja do zmiany hasła
 export const changePassword = async (token, oldPassword, newPassword) => {
   try {
     const response = await axios.put(

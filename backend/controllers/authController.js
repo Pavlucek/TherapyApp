@@ -130,37 +130,58 @@ const registerPatient = async (req, res) => {
 
 // Logowanie użytkownika
 const loginUser = async (req, res) => {
-  const {email, password} = req.body;
+  const { email, password } = req.body;
   try {
-    const user = await User.findOne({where: {email}});
+    const user = await User.findOne({ where: { email } });
     if (user && (await bcrypt.compare(password, user.password))) {
-      const token = jwt.sign({id: user.id, role: user.role}, config.secret, {
+      // Determine the current environment and extract the secret
+      const env = process.env.NODE_ENV || 'development';
+      const secret = config[env].secret;
+
+      const token = jwt.sign({ id: user.id, role: user.role }, secret, {
         expiresIn: '1h',
       });
 
-      // Pobierz dodatkowe informacje o użytkowniku, np. nazwę
-      let userName = '';
-
       if (user.role === 'therapist') {
-        const therapist = await Therapist.findOne({where: {user_id: user.id}});
+        const therapist = await Therapist.findOne({ where: { user_id: user.id } });
         if (!therapist) {
-          return res.status(404).json({error: 'Therapist record not found'});
+          return res.status(404).json({ error: 'Therapist record not found' });
         }
-        userName = therapist.name;
+        // Retrieve all patients assigned to this therapist
+        const patients = await Patient.findAll({ where: { therapist_id: therapist.id } });
+        const patientIds = patients.map((patient) => patient.id);
+        return res.json({
+          token,
+          role: user.role,
+          userName: therapist.name,
+          therapistId: therapist.id,
+          patients: patientIds,
+        });
       } else if (user.role === 'patient') {
-        const patient = await Patient.findOne({where: {user_id: user.id}});
+        const patient = await Patient.findOne({ where: { user_id: user.id } });
         if (!patient) {
-          return res.status(404).json({error: 'Patient record not found'});
+          return res.status(404).json({ error: 'Patient record not found' });
         }
-        userName = patient.name;
+        return res.json({
+          token,
+          role: user.role,
+          userName: patient.name,
+          patientId: patient.id,
+          therapistId: patient.therapist_id,
+        });
+      } else {
+        // For admin or other roles
+        return res.json({
+          token,
+          role: user.role,
+          userName: user.userName || '',
+        });
       }
-
-      res.json({token, role: user.role, userName});
     } else {
-      res.status(401).json({message: 'Invalid credentials'});
+      res.status(401).json({ message: 'Invalid credentials' });
     }
   } catch (error) {
-    res.status(500).json({error: error.message});
+    res.status(500).json({ error: error.message });
   }
 };
 

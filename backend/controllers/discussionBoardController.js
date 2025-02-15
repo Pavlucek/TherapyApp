@@ -1,4 +1,4 @@
-const {DiscussionBoard} = require('../models');
+const {DiscussionBoard, Therapist} = require('../models');
 
 const getMessages = async (req, res) => {
   const {patient_id, therapist_id} = req.query;
@@ -113,10 +113,31 @@ const markAsRead = async (req, res) => {
   }
 };
 
+const getTherapist = async (req, res) => {
+  // Możesz pobrać therapist_id z query lub params, np.:
+  const therapist_id = req.query.therapist_id;
+  if (!therapist_id) {
+    return res.status(400).json({ message: 'Brak przekazanego therapist_id' });
+  }
+
+  try {
+    const therapist = await Therapist.findByPk(therapist_id, {
+      attributes: ['id', 'name', 'phone', 'address', 'specialization', 'date_of_birth', 'gender'],
+    });
+    if (!therapist) {
+      return res.status(404).json({ message: 'Terapeuta nie znaleziono' });
+    }
+    res.json(therapist);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getMessages,
   addMessage,
   deleteMessage,
   editMessage,
   markAsRead,
+  getTherapist,
 };

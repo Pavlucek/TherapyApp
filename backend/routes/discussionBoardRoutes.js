@@ -31,4 +31,10 @@ router.put(
   discussionBoardController.markAsRead,
 );
 
+router.get(
+  '/therapist',
+  authMiddleware(['therapist', 'patient']),
+  discussionBoardController.getTherapist, // upewnij się, że ta funkcja jest zaimplementowana w kontrolerze
+);
+
 module.exports = router;

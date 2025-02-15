@@ -1,30 +1,47 @@
-const { Resource, SharedResource, Patient } = require('../models');
+const { Resource, SharedResource, Patient, Therapist, CommentMaterials, FavoriteMaterials, User } = require('../models');
 
-// Tworzenie materiału i opcjonalne udostępnianie go pacjentom
+// Dodawanie materiału i opcjonalne udostępnianie go pacjentom
 const addMaterial = async (req, res) => {
-  const { title, description, url, patient_ids } = req.body;
-  const therapist_id = req.user.id;
-
-  console.log('Adding new material:', { title, description, url, therapist_id, patient_ids });
+  // Pobieramy nowe pola content i contentType razem z innymi danymi
+  const { title, description, url, content, contentType, patient_ids } = req.body;
 
   try {
-    // Tworzenie materiału
+    // Znajdź rekord terapeuty powiązany z użytkownikiem (user_id)
+    const therapistRecord = await Therapist.findOne({ where: { user_id: req.user.id } });
+    if (!therapistRecord) {
+      return res.status(400).json({ error: 'Rekord terapeuty nie został znaleziony dla tego użytkownika' });
+    }
+    const therapist_id = therapistRecord.id;
+
+    console.log('Adding new material:', {
+      title,
+      description,
+      url,
+      content,
+      contentType,
+      therapist_id,
+      patient_ids,
+    });
+
+    // Tworzenie materiału z nowymi polami
     const newMaterial = await Resource.create({
       therapist_id,
       title,
       description,
       url,
+      content,      // Nowa treść materiału
+      contentType,  // Typ materiału (np. 'link', 'text', 'video', 'pdf', 'audio')
     });
     console.log('New material created:', newMaterial);
 
-    // Udostępnianie materiału pacjentom
+    // Udostępnianie materiału pacjentom, jeśli przekazano patient_ids
     if (patient_ids && patient_ids.length > 0) {
       const sharedResources = patient_ids.map(patient_id => ({
         patient_id,
         resource_id: newMaterial.id,
       }));
       console.log('Sharing material with patients:', sharedResources);
-      await SharedResource.bulkCreate(sharedResources);
+      await SharedResource.bulkCreate(sharedResources, { fields: ['patient_id', 'resource_id'] });
     }
 
     res.status(201).json(newMaterial);
@@ -46,12 +63,12 @@ const getMaterials = async (req, res) => {
     if (role === 'patient') {
       // Pobieranie pacjenta na podstawie user_id
       const patient = await Patient.findOne({ where: { user_id: userId } });
-      
+
       if (!patient) {
         return res.status(400).json({ error: 'Patient not found for this user' });
       }
 
-      const patientId = patient.id; // Poprawne patient_id
+      const patientId = patient.id;
 
       console.log('Fetching materials for patient with patientId:', patientId);
 
@@ -70,7 +87,7 @@ const getMaterials = async (req, res) => {
       console.log('Fetching materials for therapist with therapistId:', therapistId);
 
       materials = await Resource.findAll({
-        where: { therapist_id: therapistId }
+        where: { therapist_id: therapistId },
       });
 
       console.log('Materials for therapist:', materials);
@@ -79,6 +96,87 @@ const getMaterials = async (req, res) => {
     res.status(200).json(materials);
   } catch (error) {
     console.error('Error fetching materials:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Pobieranie szczegółowych danych materiału wraz z komentarzami i danymi terapeuty
+const getMaterialDetails = async (req, res) => {
+  const { id } = req.params; // resource_id
+  try {
+    const material = await Resource.findByPk(id, {
+      include: [
+        {
+          model: Therapist,
+          attributes: ['name', 'phone', 'specialization'],
+        },
+        {
+          model: CommentMaterials,
+          include: [{ model: User, attributes: ['userName'] }],
+          order: [['date', 'ASC']],
+        },
+      ],
+    });
+    if (!material) {
+      return res.status(404).json({ error: 'Material not found' });
+    }
+    res.status(200).json(material);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Dodawanie komentarza do materiału
+const addComment = async (req, res) => {
+  const { id } = req.params; // resource_id
+  const { content } = req.body;
+  const user_id = req.user.id;
+  try {
+    const comment = await CommentMaterials.create({ resource_id: id, user_id, content });
+    res.status(201).json(comment);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Pobieranie komentarzy dla materiału
+const getComments = async (req, res) => {
+  const { id } = req.params; // resource_id
+  try {
+    const comments = await CommentMaterials.findAll({
+      where: { resource_id: id },
+      include: [{ model: User, attributes: ['userName'] }],
+      order: [['date', 'ASC']],
+    });
+    res.status(200).json(comments);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Dodawanie materiału do ulubionych
+const addFavorite = async (req, res) => {
+  const { id } = req.params; // resource_id
+  const user_id = req.user.id;
+  try {
+    const favorite = await FavoriteMaterials.create({ resource_id: id, user_id });
+    res.status(201).json(favorite);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Usuwanie materiału z ulubionych
+const removeFavorite = async (req, res) => {
+  const { id } = req.params; // resource_id
+  const user_id = req.user.id;
+  try {
+    const result = await FavoriteMaterials.destroy({ where: { resource_id: id, user_id } });
+    if (result === 0) {
+      return res.status(404).json({ error: 'Favorite not found' });
+    }
+    res.status(200).json({ message: 'Favorite removed successfully' });
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
@@ -165,6 +263,11 @@ const removeMaterialForPatient = async (req, res) => {
 module.exports = {
   addMaterial,
   getMaterials,
+  getMaterialDetails,
+  addComment,
+  getComments,
+  addFavorite,
+  removeFavorite,
   shareMaterial,
   deleteMaterial,
   removeMaterialForPatient,

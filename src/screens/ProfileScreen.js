@@ -9,11 +9,11 @@ const ProfileScreen = ({ navigation }) => {
 
   const generateSentence = () => {
     const sentences = [
-      "Dzisiaj jest piękny dzień, pełen możliwości!",
-      "Wierzę w siebie i swoje możliwości.",
-      "Każdy dzień przynosi nowe szanse.",
-      "Jestem silny i zdolny do osiągnięcia wszystkiego.",
-      "Uśmiechaj się – życie jest piękne!"
+      'Dzisiaj jest piękny dzień, pełen możliwości!',
+      'Wierzę w siebie i swoje możliwości.',
+      'Każdy dzień przynosi nowe szanse.',
+      'Jestem silny i zdolny do osiągnięcia wszystkiego.',
+      'Uśmiechaj się – życie jest piękne!',
     ];
     const randomIndex = Math.floor(Math.random() * sentences.length);
     setSentence(sentences[randomIndex]);
@@ -28,12 +28,12 @@ const ProfileScreen = ({ navigation }) => {
       <View style={styles.headerContainer}>
         <Text style={styles.greeting}>Witaj,</Text>
         <Text style={styles.userName}>{user ? user.userName : 'Użytkownik'}</Text>
-        
+
         <TouchableOpacity style={styles.generateButton} onPress={generateSentence}>
           <Ionicons name="sunny-outline" size={24} color="#ffffff" />
           <Text style={styles.generateButtonText}>Generuj sentencję</Text>
         </TouchableOpacity>
-        
+
         {sentence ? <Text style={styles.sentence}>{sentence}</Text> : null}
       </View>
 
@@ -64,9 +64,9 @@ const ProfileScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: '#ffffff' 
+  container: {
+    flex: 1,
+    backgroundColor: '#ffffff',
   },
   headerContainer: {
     backgroundColor: '#C8EDFF',

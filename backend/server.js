@@ -7,6 +7,7 @@ const userRoutes = require('./routes/userRoutes');
 const notesRoutes = require('./routes/notesRoutes');
 const journalRoutes = require('./routes/journalRoutes');
 const StatsRoutes = require('./routes/statsRoutes');
+const sharedMaterialsRoutes = require('./routes/sharedMaterialsRoutes');
 const { sequelize } = require('./models');
 
 const app = express();
@@ -22,6 +23,8 @@ app.use('/user', userRoutes);
 app.use('/notes', notesRoutes);
 app.use('/journal', journalRoutes);
 app.use('/api', StatsRoutes);
+app.use('/materials', sharedMaterialsRoutes);
+
 
 // Start the server
 app.listen(port, async () => {

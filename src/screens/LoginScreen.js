@@ -33,11 +33,12 @@ const LoginScreen = () => {
 
       <Text style={styles.label}>Email</Text>
       <TextInput
-        style={styles.input}
-        placeholder="Wprowadź email"
-        value={email}
-        onChangeText={setEmail}
-        placeholderTextColor="#07435D"
+      style={styles.input}
+      placeholder="Wprowadź email"
+      value={email}
+      onChangeText={setEmail}
+      autoCapitalize="none" // Dodaj tę właściwość
+      placeholderTextColor="#07435D"
       />
 
       <Text style={styles.label}>Hasło</Text>

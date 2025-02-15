@@ -1,18 +1,21 @@
+// models/Favorite.js
 module.exports = (sequelize, DataTypes) => {
-    const SharedResource = sequelize.define(
-      'SharedResource',
+    return sequelize.define(
+      'FavoriteMaterials',
       {
-        patient_id: {
+        resource_id: {
           type: DataTypes.INTEGER,
+          allowNull: false,
           references: {
-            model: 'Patients',
+            model: 'Resources',
             key: 'id',
           },
         },
-        resource_id: {
+        user_id: {
           type: DataTypes.INTEGER,
+          allowNull: false,
           references: {
-            model: 'Resources',
+            model: 'Users',
             key: 'id',
           },
         },
@@ -21,6 +24,4 @@ module.exports = (sequelize, DataTypes) => {
         timestamps: false,
       }
     );
-
-    return SharedResource;
   };

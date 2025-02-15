@@ -1,5 +1,4 @@
-// src/screens/admin/RegisterTherapistScreen.js
-import React, { useState, useContext, Button } from 'react';
+import React, { useState, useContext } from 'react';
 import {
   View,
   Text,
@@ -8,6 +7,8 @@ import {
   StyleSheet,
   Alert,
   Platform,
+  Button,
+  Modal,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
@@ -49,7 +50,16 @@ const RegisterTherapistScreen = () => {
   };
 
   const handleRegister = async () => {
-    if (!email || !password || !name || !phone || !address || !specialization || !dateOfBirth || !gender) {
+    if (
+      !email ||
+      !password ||
+      !name ||
+      !phone ||
+      !address ||
+      !specialization ||
+      !dateOfBirth ||
+      !gender
+    ) {
       Alert.alert('Błąd', 'Wypełnij wszystkie pola dla terapeuty');
       return;
     }
@@ -75,11 +85,8 @@ const RegisterTherapistScreen = () => {
   const onDateChange = (event, selectedDate) => {
     if (selectedDate) {
       setDateOfBirth(selectedDate);
-      setShowDatePicker(false); // Ukryj picker po wyborze daty, zarówno na iOS, jak i Android
-    } else {
-      // Jeśli użytkownik anulował wybór (głównie Android)
-      setShowDatePicker(false);
     }
+    setShowDatePicker(false);
   };
 
   return (
@@ -168,22 +175,14 @@ const RegisterTherapistScreen = () => {
             : 'Wybierz płeć'}
         </Text>
       </TouchableOpacity>
-      {showGenderPicker && (
-        <DateTimePicker
-          // Tu pozostawiamy picker z modalem dla płci (ale zwykle dla płci używamy Pickera z modalem)
-          // Możesz też wyświetlić modal z Pickerem, jak w poprzednim przykładzie, jeśli wolisz
-          // Dla uproszczenia pozostawiamy ten kod w modalnej formie poniżej
-          // Jeśli chcesz, możesz przenieść picker dla płci do osobnego modalu tak jak wcześniej.
-          // Tutaj jednak pozostajemy przy wyświetlaniu modalu.
-          // W poniższym kodzie nie używamy DateTimePicker dla płci, lecz wyświetlamy modal z Pickerem.
-          // Dlatego poniżej usuniemy bezpośrednie wywołanie DateTimePicker dla płci.
-          // Zamiast tego, skorzystajmy z istniejącego modalu z Pickerem.
-          // (Poniższy fragment został przeniesiony do modalu, który znajduje się niżej.)
-          null
-        />
-      )}
-      {/* Pokaż modal z pickerem dla płci */}
-      {showGenderPicker && (
+
+      {/* Modal z Pickerem dla płci */}
+      <Modal
+        visible={showGenderPicker}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowGenderPicker(false)}
+      >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Wybierz płeć</Text>
@@ -191,7 +190,6 @@ const RegisterTherapistScreen = () => {
               selectedValue={gender || ''}
               onValueChange={(itemValue) => {
                 setGender(itemValue);
-                setShowGenderPicker(false);
               }}
             >
               <Picker.Item label="Mężczyzna" value="male" />
@@ -201,7 +199,7 @@ const RegisterTherapistScreen = () => {
             <Button title="Zamknij" onPress={() => setShowGenderPicker(false)} />
           </View>
         </View>
-      )}
+      </Modal>
 
       <TouchableOpacity style={styles.primaryButton} onPress={handleRegister}>
         <Text style={styles.primaryButtonText}>Zarejestruj</Text>
