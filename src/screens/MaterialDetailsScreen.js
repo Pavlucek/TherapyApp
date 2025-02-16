@@ -132,21 +132,6 @@ const MaterialDetailsScreen = ({ route, navigation }) => {
               </Text>
             </View>
           )}
-
-          {/* Sekcja: Komentarze */}
-            <Text style={styles.cardHeader}>Komentarze</Text>
-            {comments && comments.length > 0 ? (
-              comments.map((comment) => (
-                <View key={comment.id} style={styles.commentItem}>
-                  <Text style={styles.commentAuthor}>
-                    {comment.User ? comment.User.email : 'Anonim'}
-                  </Text>
-                  <Text style={styles.commentBody}>{comment.content}</Text>
-                </View>
-              ))
-            ) : (
-              <Text style={styles.noComments}>Brak komentarzy</Text>
-            )}
         </ScrollView>
       </SafeAreaView>
     </>

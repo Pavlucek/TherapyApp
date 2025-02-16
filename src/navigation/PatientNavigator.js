@@ -7,7 +7,8 @@ import ProfileScreen from '../screens/ProfileScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import ChangePasswordScreen from '../screens/ChangePasswordScreen';
 import ChatScreen from '../screens/ChatScreen';
-import MaterialsStackNavigator from './MaterialsStackNavigator'; // nowy stos dla materiałów
+import MaterialsStackNavigator from './MaterialsStackNavigator';
+import SessionsStackNavigator from './SessionsStackNavigator'; // Import stosu sesji
 
 const Tab = createBottomTabNavigator();
 const ProfileStack = createStackNavigator();
@@ -21,6 +22,9 @@ const getTabBarIcon = (routeName, focused, color, size) => {
       break;
     case 'Dziennik':
       iconName = focused ? 'book' : 'book-outline';
+      break;
+    case 'Sesje':
+      iconName = focused ? 'calendar' : 'calendar-outline';
       break;
     case 'Ustawienia':
       iconName = focused ? 'settings' : 'settings-outline';
@@ -39,7 +43,7 @@ const getTabBarIcon = (routeName, focused, color, size) => {
   return <Ionicons name={iconName} size={size} color={color} />;
 };
 
-// Tworzymy stos nawigacji dla ekranu Profilu
+// Stos nawigacji dla ekranu Profilu
 const ProfileStackNavigator = () => {
   return (
     <ProfileStack.Navigator
@@ -72,6 +76,7 @@ const PatientNavigator = () => {
     >
       <Tab.Screen name="Dziennik" component={JournalScreen} />
       <Tab.Screen name="Materiały" component={MaterialsStackNavigator} />
+      <Tab.Screen name="Sesje" component={SessionsStackNavigator} />
       <Tab.Screen name="Czat" component={ChatScreen} />
       <Tab.Screen name="Profil" component={ProfileStackNavigator} />
     </Tab.Navigator>
