@@ -2,7 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import JournalScreen from '../screens/JournalScreen';
+import PatientJournalStackNavigator from './PatientJournalStackNavigator';
 import ProfileScreen from '../screens/ProfileScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import ChangePasswordScreen from '../screens/ChangePasswordScreen';
@@ -74,7 +74,7 @@ const PatientNavigator = () => {
         tabBarStyle: { backgroundColor: '#07435D' },
       })}
     >
-      <Tab.Screen name="Dziennik" component={JournalScreen} />
+      <Tab.Screen name="Dziennik" component={PatientJournalStackNavigator} />
       <Tab.Screen name="Materiały" component={MaterialsStackNavigator} />
       <Tab.Screen name="Sesje" component={SessionsStackNavigator} />
       <Tab.Screen name="Czat" component={ChatScreen} />

@@ -28,7 +28,10 @@ const MaterialDetailsScreen = ({ route, navigation }) => {
         console.log('[MaterialDetailsScreen] Materiał pobrany:', data);
         setMaterial(data);
       } catch (error) {
-        console.error('[MaterialDetailsScreen] Error fetching material details:', error);
+        console.error(
+          '[MaterialDetailsScreen] Error fetching material details:',
+          error
+        );
       } finally {
         setLoading(false);
       }
@@ -61,77 +64,101 @@ const MaterialDetailsScreen = ({ route, navigation }) => {
 
   const { title, description, content, contentType, url } = material;
   const therapist = material.Therapist;
-  const comments = material.CommentMaterials;
 
   return (
     <>
       {/* Nagłówek z niebieskim tłem */}
       <SafeAreaView style={styles.headerSafeArea} edges={['top']}>
         <View style={styles.headerContainer}>
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          {/* Ikona powrotu */}
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
             <Ionicons name="arrow-back" size={24} color="#07435D" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{title}</Text>
+
+          {/* Tytuł + terapeuta (opcjonalnie) */}
+          <View style={{ flex: 1 }}>
+            <Text style={styles.headerTitle}>{title}</Text>
+            {/* Wyświetlamy terapeutę jako mały tekst, jeśli dostępny */}
+            {therapist && therapist.name ? (
+              <View style={styles.therapistHeaderContainer}>
+                <Ionicons
+                  name="person-circle-outline"
+                  size={16}
+                  color="#07435D"
+                  style={{ marginRight: 5 }}
+                />
+                <Text style={styles.therapistHeaderLabel}>Terapeuta: </Text>
+                <Text style={styles.therapistHeaderText}>
+                  {therapist.name}
+                </Text>
+              </View>
+            ) : null}
+          </View>
         </View>
       </SafeAreaView>
 
       {/* Treść z białym tłem */}
       <SafeAreaView style={styles.contentSafeArea}>
         <ScrollView contentContainerStyle={styles.contentContainer}>
-          {/* Sekcja: Opis */}
+          {/* Sekcja: OPIS (tytuł poza kartą) */}
+          <Text style={styles.sectionTitle}>Opis</Text>
           <View style={styles.card}>
-            <Text style={styles.cardHeader}>Opis</Text>
             <Text style={styles.cardBody}>{description}</Text>
           </View>
 
-          {/* Sekcja: Treść (dla typu 'text') */}
+          {/* Sekcja: TREŚĆ (tylko jeśli contentType === 'text') */}
           {contentType === 'text' && content && (
-            <View style={styles.card}>
-              <Text style={styles.cardHeader}>Treść</Text>
-              <Text style={styles.cardBody}>{content}</Text>
-            </View>
+            <>
+              <Text style={styles.sectionTitle}>Treść</Text>
+              <View style={styles.card}>
+                <Text style={styles.cardBody}>{content}</Text>
+              </View>
+            </>
           )}
 
-          {/* Sekcja: Terapeuta */}
-          <View style={styles.card}>
-            <Text style={styles.cardHeader}>Terapeuta</Text>
-            <View style={styles.therapistContainer}>
-              <Ionicons name="person-circle-outline" size={24} color="#07435D" />
-              <Text style={styles.cardBody}>
-                {therapist ? therapist.name : 'Brak informacji o terapeucie'}
-              </Text>
-            </View>
-          </View>
-
-          {/* Sekcja: Link (dla typu 'link') */}
+          {/* Sekcja: LINK (dla contentType === 'link') */}
           {contentType === 'link' && url && (
-            <View style={styles.odleglosc}>
-              <TouchableOpacity style={styles.actionButton} onPress={handleOpenLink}>
-                <Ionicons name="open-outline" size={24} color="#07435D" />
-                <Text style={styles.actionText}>Otwórz link</Text>
-              </TouchableOpacity>
-            </View>
+            <>
+              <Text style={styles.sectionTitle}>Link</Text>
+              <View style={styles.odleglosc}>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={handleOpenLink}
+                >
+                  <Ionicons name="open-outline" size={24} color="#07435D" />
+                  <Text style={styles.actionText}>Otwórz link</Text>
+                </TouchableOpacity>
+              </View>
+            </>
           )}
 
-          {/* Sekcja: Placeholder dla innych typów */}
-          {(contentType === 'video' || contentType === 'pdf' || contentType === 'audio') && url && (
-            <View style={styles.odleglosc}>
-              <Text style={styles.cardHeader}>
-                {contentType === 'video'
-                  ? 'Wideo'
-                  : contentType === 'pdf'
-                  ? 'PDF'
-                  : 'Audio'}
-              </Text>
-              <Text style={styles.noticeText}>
-                {contentType === 'video'
-                  ? 'Odtwarzanie wideo – implementacja w przyszłości'
-                  : contentType === 'pdf'
-                  ? 'Wyświetlanie PDF – implementacja w przyszłości'
-                  : 'Odtwarzanie audio – implementacja w przyszłości'}
-              </Text>
-            </View>
-          )}
+          {/* Sekcja: placeholder dla VIDEO / PDF / AUDIO */}
+          {(contentType === 'video' ||
+            contentType === 'pdf' ||
+            contentType === 'audio') &&
+            url && (
+              <>
+                <Text style={styles.sectionTitle}>
+                  {contentType === 'video'
+                    ? 'Wideo'
+                    : contentType === 'pdf'
+                    ? 'PDF'
+                    : 'Audio'}
+                </Text>
+                <View style={styles.odleglosc}>
+                  <Text style={styles.noticeText}>
+                    {contentType === 'video'
+                      ? 'Odtwarzanie wideo – implementacja w przyszłości'
+                      : contentType === 'pdf'
+                      ? 'Wyświetlanie PDF – implementacja w przyszłości'
+                      : 'Odtwarzanie audio – implementacja w przyszłości'}
+                  </Text>
+                </View>
+              </>
+            )}
         </ScrollView>
       </SafeAreaView>
     </>
@@ -141,9 +168,12 @@ const MaterialDetailsScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   headerSafeArea: {
     backgroundColor: '#C8EDFF',
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
   },
   contentSafeArea: {
     backgroundColor: '#ffffff',
+    flex: 1,
   },
   headerContainer: {
     backgroundColor: '#C8EDFF',
@@ -164,9 +194,32 @@ const styles = StyleSheet.create({
     color: '#07435D',
     flexShrink: 1,
   },
+  /* Nowe elementy w nagłówku */
+  therapistHeaderContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+    flexWrap: 'wrap',
+  },
+  therapistHeaderLabel: {
+    fontSize: 14,
+    color: '#07435D',
+    fontWeight: 'bold',
+  },
+  therapistHeaderText: {
+    fontSize: 14,
+    color: '#07435D',
+  },
   contentContainer: {
     paddingLeft: 30,
     paddingRight: 30,
+    paddingBottom: 30,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#07435D',
+    marginBottom: 10,
   },
   card: {
     backgroundColor: '#F0F8FF',
@@ -178,15 +231,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
     elevation: 3,
-  },
-  cardHeader: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#07435D',
-    borderRadius: 8,
-    marginBottom: 20,
-
-    alignSelf: 'flex-start',
   },
   cardBody: {
     fontSize: 14,
@@ -211,31 +255,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#555',
   },
-  therapistContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  odleglosc: {
+    marginBottom: 20,
   },
-  commentItem: {
-    marginBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-    paddingBottom: 5,
-  },
-  commentAuthor: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#07435D',
-  },
-  commentBody: {
-    fontSize: 16,
-    color: '#333',
-  },
-  noComments: {
-    fontSize: 16,
-    color: '#555',
-    textAlign: 'center',
-    marginTop: 10,
-  },
+  // Ekran ładowania / błąd
   loaderContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -255,9 +278,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: 'red',
     textAlign: 'center',
-  },
-  odleglosc: {
-    marginBottom: 20,
   },
 });
 

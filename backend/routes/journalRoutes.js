@@ -1,26 +1,43 @@
+// routes/journalEntryRoutes.js
 const express = require('express');
-const journalController = require('../controllers/journalController');
+const journalEntryController = require('../controllers/journalEntryController');
 const authMiddleware = require('../middleware/authMiddleware');
+
 const router = express.Router();
 
-// Dodawanie wpisów - dostępne tylko dla pacjentów
-router.post('/', authMiddleware(['patient']), journalController.addEntry);
+// Tworzenie nowego wpisu w dzienniku – dostępne np. dla pacjenta
+router.post('/', authMiddleware(['patient']), journalEntryController.createJournalEntry);
 
-// Edytowanie wpisów - dostępne tylko dla pacjentów
-router.put('/:id', authMiddleware(['patient']), journalController.updateEntry);
+// Pobranie wszystkich wpisów – dostępne np. dla pacjenta/terapeuty (zależnie od logiki)
+router.get('/', authMiddleware(['patient', 'therapist']), journalEntryController.getAllJournalEntries);
 
-// Usuwanie wpisów - dostępne tylko dla pacjentów
-router.delete(
-  '/:id',
-  authMiddleware(['patient']),
-  journalController.deleteEntry,
-);
+// Pobranie pojedynczego wpisu
+router.get('/:id', authMiddleware(['patient', 'therapist']), journalEntryController.getJournalEntryById);
 
-// Przeglądanie wpisów - dostępne dla pacjentów i terapeutów
-router.get(
-  '/:patient_id',
-  authMiddleware(['therapist', 'patient']),
-  journalController.getEntries,
-);
+// Aktualizacja wpisu w dzienniku – np. tylko pacjent
+router.put('/:id', authMiddleware(['patient']), journalEntryController.updateJournalEntry);
+
+// Usunięcie wpisu w dzienniku – np. tylko pacjent
+router.delete('/:id', authMiddleware(['patient']), journalEntryController.deleteJournalEntry);
+
+// ------------------------------
+// REFLECTIONS (relacja 1-wiele z JournalEntry)
+// ------------------------------
+
+// Dodanie refleksji do wpisu
+router.post('/:id/reflections', authMiddleware(['patient']), journalEntryController.addReflection);
+
+// Pobranie refleksji przypisanych do danego wpisu
+router.get('/:id/reflections', authMiddleware(['patient', 'therapist']), journalEntryController.getReflections);
+
+// ------------------------------
+// TAGS (relacja wiele-do-wielu z JournalEntry)
+// ------------------------------
+
+// Przypisanie istniejącego Tag do wpisu
+router.post('/:id/tags/:tagId', authMiddleware(['patient']), journalEntryController.addTagToEntry);
+
+// Usunięcie istniejącego Tag z wpisu
+router.delete('/:id/tags/:tagId', authMiddleware(['patient']), journalEntryController.removeTagFromEntry);
 
 module.exports = router;
