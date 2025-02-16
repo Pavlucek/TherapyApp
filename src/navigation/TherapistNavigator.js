@@ -1,14 +1,16 @@
 import React from 'react';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import HomeScreen from '../screens/HomeScreen';
-import ProfileScreen from '../screens/ProfileScreen';
-import JournalScreen from '../screens/JournalScreen';
-import SettingsScreen from '../screens/SettingsScreen';
+
+import TherapistProfileStack from './TherapistProfileStack';
+import TherapistChatStack from './TherapistChatStack';
+import TherapistHomeStack from './TherapistHomeStack';
+import TherapistMaterialsStack from './TherapistMaterialsStack';
+import TherapistSessionStack from './TherapistSessionStack';
 
 const Tab = createBottomTabNavigator();
 
-// Define the icon component outside of the TherapistNavigator function
+// Funkcja zwracająca ikonę dla zakładki
 const getTabBarIcon = (routeName, focused, color, size) => {
   let iconName;
 
@@ -16,17 +18,20 @@ const getTabBarIcon = (routeName, focused, color, size) => {
     case 'Home':
       iconName = focused ? 'home' : 'home-outline';
       break;
-    case 'Journal':
+    case 'Chat':
+      iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
+      break;
+    case 'Materials':
       iconName = focused ? 'book' : 'book-outline';
+      break;
+    case 'Sessions':
+      iconName = focused ? 'calendar' : 'calendar-outline';
       break;
     case 'Profile':
       iconName = focused ? 'person' : 'person-outline';
       break;
-    case 'Settings':
-      iconName = focused ? 'settings' : 'settings-outline';
-      break;
     default:
-      iconName = 'circle';
+      iconName = 'ellipse';
       break;
   }
 
@@ -36,20 +41,41 @@ const getTabBarIcon = (routeName, focused, color, size) => {
 const TherapistNavigator = () => {
   return (
     <Tab.Navigator
-      screenOptions={({route}) => ({
-        headerBackTitleVisible: false, // Ukrywa tekst przycisku powrotu
+      screenOptions={({ route }) => ({
+        headerBackTitleVisible: false,
         headerShown: false,
-        headerTitle: '', // brak tytułu we wszystkich ekranach
-        tabBarIcon: ({focused, color, size}) =>
-          getTabBarIcon(route.name, focused, color, size), // Use the external function
-        tabBarActiveTintColor: '#42BCBA', // Color of active icons
-        tabBarInactiveTintColor: '#C8EDFF', // Color of inactive icons
-        tabBarStyle: {backgroundColor: '#07435D'}, // Background color of the tab bar
-      })}>
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Journal" component={JournalScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
+        tabBarIcon: ({ focused, color, size }) =>
+          getTabBarIcon(route.name, focused, color, size),
+        tabBarActiveTintColor: '#42BCBA',
+        tabBarInactiveTintColor: '#C8EDFF',
+        tabBarStyle: { backgroundColor: '#07435D' },
+      })}
+    >
+      <Tab.Screen
+        name="Home"
+        component={TherapistHomeStack}
+        options={{ tabBarLabel: 'Strona Główna' }}
+      />
+      <Tab.Screen
+        name="Chat"
+        component={TherapistChatStack}
+        options={{ tabBarLabel: 'Czat' }}
+      />
+      <Tab.Screen
+        name="Materials"
+        component={TherapistMaterialsStack}
+        options={{ tabBarLabel: 'Materiały' }}
+      />
+      <Tab.Screen
+        name="Sessions"
+        component={TherapistSessionStack}
+        options={{ tabBarLabel: 'Sesje' }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={TherapistProfileStack}
+        options={{ tabBarLabel: 'Profil' }}
+      />
     </Tab.Navigator>
   );
 };
