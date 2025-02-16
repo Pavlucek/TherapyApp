@@ -112,8 +112,7 @@ const getMaterialDetails = async (req, res) => {
         },
         {
           model: CommentMaterials,
-          include: [{ model: User, attributes: ['userName'] }],
-          order: [['date', 'ASC']],
+          include: [{ model: User, attributes: ['email'] }], // pobieramy email zamiast userName
         },
       ],
     });
@@ -122,9 +121,12 @@ const getMaterialDetails = async (req, res) => {
     }
     res.status(200).json(material);
   } catch (error) {
+    console.error('[getMaterialDetails] Error:', error);
     res.status(500).json({ error: error.message });
   }
 };
+
+
 
 // Dodawanie komentarza do materiału
 const addComment = async (req, res) => {

@@ -2,12 +2,12 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import MaterialsScreen from '../screens/MaterialsScreen';
 import JournalScreen from '../screens/JournalScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import ChangePasswordScreen from '../screens/ChangePasswordScreen';
 import ChatScreen from '../screens/ChatScreen';
+import MaterialsStackNavigator from './MaterialsStackNavigator'; // nowy stos dla materiałów
 
 const Tab = createBottomTabNavigator();
 const ProfileStack = createStackNavigator();
@@ -44,9 +44,9 @@ const ProfileStackNavigator = () => {
   return (
     <ProfileStack.Navigator
       screenOptions={{
-        headerBackTitleVisible: false, // Ukrywa tekst przycisku powrotu
-        headerShown: true,            // Ukrywa cały header
-        headerTitle: '',               // Brak tytułu w headerze
+        headerBackTitleVisible: false,
+        headerShown: true,
+        headerTitle: '',
       }}
     >
       <ProfileStack.Screen name="ProfilUżytkownika" component={ProfileScreen} />
@@ -56,14 +56,13 @@ const ProfileStackNavigator = () => {
   );
 };
 
-
 const PatientNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        headerBackTitleVisible: false, // Ukrywa tekst przycisku powrotu
+        headerBackTitleVisible: false,
         headerShown: false,
-        headerTitle: '', // Brak tytułu we wszystkich ekranach
+        headerTitle: '',
         tabBarIcon: ({ focused, color, size }) =>
           getTabBarIcon(route.name, focused, color, size),
         tabBarActiveTintColor: '#42BCBA',
@@ -72,7 +71,7 @@ const PatientNavigator = () => {
       })}
     >
       <Tab.Screen name="Dziennik" component={JournalScreen} />
-      <Tab.Screen name="Materiały" component={MaterialsScreen} />
+      <Tab.Screen name="Materiały" component={MaterialsStackNavigator} />
       <Tab.Screen name="Czat" component={ChatScreen} />
       <Tab.Screen name="Profil" component={ProfileStackNavigator} />
     </Tab.Navigator>

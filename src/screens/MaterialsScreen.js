@@ -8,22 +8,40 @@ import {
   ActivityIndicator,
   RefreshControl,
   TextInput,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { Picker } from '@react-native-picker/picker';
 import { AuthContext } from '../context/AuthContext';
 import { getMaterials } from '../api/sharedMaterialsApi';
+
+const FILTER_OPTIONS = [
+  { label: 'Wszystkie', value: 'all' },
+  { label: 'Link', value: 'link' },
+  { label: 'Tekst', value: 'text' },
+  { label: 'Wideo', value: 'video' },
+  { label: 'PDF', value: 'pdf' },
+  { label: 'Audio', value: 'audio' },
+];
+
+const ICON_MAP = {
+  all: 'apps-outline',
+  link: 'link-outline',
+  text: 'document-text-outline',
+  video: 'videocam-outline',
+  pdf: 'document-attach-outline', // Możesz zmienić na inny, jeśli wolisz
+  audio: 'musical-notes-outline',
+};
 
 const MaterialsScreen = ({ navigation }) => {
   const { user } = useContext(AuthContext);
   const [materials, setMaterials] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all'); // Możliwe wartości: 'all', 'link', 'text', 'video', 'pdf', 'audio'
+  const [filterType, setFilterType] = useState('all');
   const [showSearch, setShowSearch] = useState(false);
-  const [showFilter, setShowFilter] = useState(false);
+  const [showFilterModal, setShowFilterModal] = useState(false);
 
   // Funkcja pobierająca materiały z backendu
   const fetchData = async () => {
@@ -52,7 +70,7 @@ const MaterialsScreen = ({ navigation }) => {
     }, [user])
   );
 
-  // Filtrujemy materiały na podstawie wyszukiwania i filtru typu
+  // Filtrujemy materiały na podstawie searchTerm oraz wybranego typu
   const filteredMaterials = materials.filter((item) => {
     const resource = item.Resource;
     if (!resource) {return false;}
@@ -66,7 +84,9 @@ const MaterialsScreen = ({ navigation }) => {
   });
 
   // Sortowanie – zakładamy, że najnowsze materiały mają najwyższe ID
-  const sortedMaterials = filteredMaterials.sort((a, b) => b.Resource.id - a.Resource.id);
+  const sortedMaterials = filteredMaterials.sort(
+    (a, b) => b.Resource.id - a.Resource.id
+  );
 
   // Funkcja renderująca pojedynczy element listy
   const renderItem = ({ item }) => {
@@ -106,7 +126,10 @@ const MaterialsScreen = ({ navigation }) => {
           <TouchableOpacity onPress={() => setShowSearch((prev) => !prev)}>
             <Ionicons name="search-outline" size={24} color="#07435D" />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setShowFilter((prev) => !prev)} style={styles.filterIcon}>
+          <TouchableOpacity
+            onPress={() => setShowFilterModal(true)}
+            style={styles.filterIcon}
+          >
             <Ionicons name="filter-outline" size={24} color="#07435D" />
           </TouchableOpacity>
         </View>
@@ -125,27 +148,48 @@ const MaterialsScreen = ({ navigation }) => {
         </View>
       )}
 
-      {/* Filtrowanie po typie */}
-      {showFilter && (
-        <View style={styles.filterContainer}>
-          <Picker
-            style={styles.picker}
-            selectedValue={filterType}
-            onValueChange={(value) => {
-              console.log('[MaterialsScreen] Zmieniono filtr typu na:', value);
-              setFilterType(value);
-            }}
-            mode="dropdown"
-          >
-            <Picker.Item label="Wszystkie" value="all" />
-            <Picker.Item label="Link" value="link" />
-            <Picker.Item label="Tekst" value="text" />
-            <Picker.Item label="Wideo" value="video" />
-            <Picker.Item label="PDF" value="pdf" />
-            <Picker.Item label="Audio" value="audio" />
-          </Picker>
+      {/* Modal filtrowania */}
+      <Modal
+        visible={showFilterModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowFilterModal(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Wybierz typ materiału</Text>
+            {FILTER_OPTIONS.map((option) => (
+              <TouchableOpacity
+                key={option.value}
+                style={[
+                  styles.modalOption,
+                  filterType === option.value && styles.selectedOption,
+                ]}
+                onPress={() => {
+                  console.log('[MaterialsScreen] Zmieniono filtr typu na:', option.value);
+                  setFilterType(option.value);
+                  setShowFilterModal(false);
+                }}
+              >
+                <View style={styles.modalOptionRow}>
+                  <Text style={styles.modalOptionText}>{option.label}</Text>
+                  <Ionicons
+                    name={ICON_MAP[option.value]}
+                    size={20}
+                    color="#07435D"
+                  />
+                </View>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setShowFilterModal(false)}
+            >
+              <Text style={styles.modalCloseButtonText}>Zamknij</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      )}
+      </Modal>
 
       <FlatList
         data={sortedMaterials}
@@ -172,7 +216,7 @@ const MaterialsScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff', // Reszta ekranu ma białe tło
+    backgroundColor: '#C8EDFF', // Reszta ekranu ma białe tło
   },
   headerContainer: {
     backgroundColor: '#C8EDFF',
@@ -210,13 +254,53 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
   },
-  filterContainer: {
-    backgroundColor: '#C8EDFF',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    paddingHorizontal: 20,
   },
-  picker: {
+  modalContent: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 20,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
     color: '#07435D',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalOption: {
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  modalOptionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  modalOptionText: {
+    fontSize: 16,
+    color: '#07435D',
+  },
+  selectedOption: {
+    backgroundColor: '#F0F8FF',
+  },
+  modalCloseButton: {
+    marginTop: 20,
+    alignItems: 'center',
+    paddingVertical: 10,
+    backgroundColor: '#C8EDFF',
+    borderRadius: 8,
+  },
+  modalCloseButtonText: {
+    fontSize: 16,
+    color: '#07435D',
+    fontWeight: 'bold',
   },
   listContainer: {
     paddingHorizontal: 16,
