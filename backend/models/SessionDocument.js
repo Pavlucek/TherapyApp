@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
         session_id: {
           type: DataTypes.INTEGER,
           references: {
-            model: 'Session', // upewnij się, że nazwa modelu odpowiada Twojej definicji
+            model: 'Sessions', // upewnij się, że nazwa modelu odpowiada Twojej definicji
             key: 'id',
           },
         },

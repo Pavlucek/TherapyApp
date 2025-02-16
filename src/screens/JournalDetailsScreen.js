@@ -107,9 +107,14 @@ const JournalDetailsScreen = ({ route, navigation }) => {
   }
 
   // Wyświetlanie tagów – jeśli tagsMany jest puste, sprawdzamy pole tags
-  const tagsToDisplay = (entry.tagsMany && entry.tagsMany.length > 0)
+// Ensure tagsToDisplay is always an array
+const tagsToDisplay =
+  Array.isArray(entry.tagsMany) && entry.tagsMany.length > 0
     ? entry.tagsMany
-    : (entry.tags && entry.tags.length > 0 ? entry.tags : []);
+    : Array.isArray(entry.tags) && entry.tags.length > 0
+      ? entry.tags
+      : [];
+
 
   return (
     <View style={styles.container}>

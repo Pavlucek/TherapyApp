@@ -97,9 +97,12 @@ const JournalScreen = ({ navigation }) => {
   // Renderowanie pojedynczej karty wpisu
   const renderItem = ({ item }) => {
     const { icon, color } = getMoodIcon(item.mood);
-    const tagsToDisplay = (item.tagsMany && item.tagsMany.length > 0)
+
+    const tagsToDisplay = Array.isArray(item.tagsMany) && item.tagsMany.length > 0
       ? item.tagsMany
-      : (item.tags && item.tags.length > 0 ? item.tags : []);
+      : Array.isArray(item.tags) && item.tags.length > 0
+        ? item.tags
+        : [];
 
     return (
       <TouchableOpacity
