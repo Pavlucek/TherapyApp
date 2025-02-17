@@ -39,6 +39,7 @@ const Reflection = require('./reflection')(sequelize, DataTypes);
 User.hasOne(Therapist, { foreignKey: 'user_id' });
 User.hasOne(Patient, { foreignKey: 'user_id' });
 Patient.belongsTo(User, { foreignKey: 'user_id' });
+Session.belongsTo(Patient, { foreignKey: 'patient_id' });
 User.hasMany(CommentMaterials, { foreignKey: 'user_id' });
 CommentMaterials.belongsTo(User, { foreignKey: 'user_id' });
 User.hasMany(FavoriteMaterials, { foreignKey: 'user_id' });

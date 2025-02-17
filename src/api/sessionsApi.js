@@ -1,11 +1,12 @@
-// api/sessionsApi.js
 import axios from 'axios';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:3000';
 
 const logRequest = (action, url, data = null) => {
   console.log(`[${action}] Wywołanie endpointu ${url}`);
-  if (data) {console.log(`[${action}] Wysłane dane:`, data);}
+  if (data) {
+    console.log(`[${action}] Wysłane dane:`, data);
+  }
 };
 
 const logResponse = (action, response) => {
@@ -21,6 +22,7 @@ const sessionsApi = {
   // Tworzenie nowej sesji (POST /sessions)
   createSession: async (sessionData, token) => {
     const url = `${API_BASE}/sessions`;
+    console.log('[createSession] req.body:', sessionData);
     logRequest('createSession', url, sessionData);
     try {
       const response = await axios.post(url, sessionData, {
@@ -69,6 +71,7 @@ const sessionsApi = {
   // Aktualizacja sesji (PUT /sessions/:id)
   updateSession: async (id, sessionData, token) => {
     const url = `${API_BASE}/sessions/${id}`;
+    console.log('[updateSession] req.body:', sessionData);
     logRequest('updateSession', url, sessionData);
     try {
       const response = await axios.put(url, sessionData, {
@@ -101,6 +104,7 @@ const sessionsApi = {
   // Dodanie dokumentu do sesji (POST /sessions/:id/documents)
   addDocument: async (id, documentData, token) => {
     const url = `${API_BASE}/sessions/${id}/documents`;
+    console.log('[addDocument] req.body:', documentData);
     logRequest('addDocument', url, documentData);
     try {
       const response = await axios.post(url, documentData, {
@@ -133,6 +137,7 @@ const sessionsApi = {
   // Przypisanie materiału do sesji (POST /sessions/:id/resources)
   addResource: async (id, resourceData, token) => {
     const url = `${API_BASE}/sessions/${id}/resources`;
+    console.log('[addResource] req.body:', resourceData);
     logRequest('addResource', url, resourceData);
     try {
       const response = await axios.post(url, resourceData, {

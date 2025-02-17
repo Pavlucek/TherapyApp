@@ -4,6 +4,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       patient_id: {
         type: DataTypes.INTEGER,
+        allowNull: false, // Ustawione jako wymagane
         references: {
           model: 'Patients',
           key: 'id',
@@ -11,13 +12,14 @@ module.exports = (sequelize, DataTypes) => {
       },
       therapist_id: {
         type: DataTypes.INTEGER,
+        allowNull: false, // Ustawione jako wymagane
         references: {
           model: 'Therapists',
           key: 'id',
         },
       },
       date: {
-        type: DataTypes.DATE, // zmieniono na DATE, żeby obsługiwać zarówno datę, jak i czas
+        type: DataTypes.DATE,
         allowNull: false,
       },
       startTime: {

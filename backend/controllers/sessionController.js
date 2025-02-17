@@ -1,5 +1,5 @@
 // controllers/sessionController.js
-const { Session, SessionDocument, Resource, SessionResource } = require('../models');
+const { Session, SessionDocument, Resource, SessionResource, Patient } = require('../models');
 
 module.exports = {
   // Tworzenie nowej sesji
@@ -19,6 +19,7 @@ module.exports = {
         include: [
           { model: SessionDocument, as: 'documents' },
           { model: Resource, as: 'resources' },
+          { model: Patient, attributes: ['name'] },
         ],
       });
       res.json(sessions);
@@ -27,6 +28,7 @@ module.exports = {
     }
   },
 
+
   // Pobranie pojedynczej sesji po ID z dokumentami i materiałami
   getSession: async (req, res) => {
     try {
@@ -34,6 +36,7 @@ module.exports = {
         include: [
           { model: SessionDocument, as: 'documents' },
           { model: Resource, as: 'resources' },
+          { model: Patient, attributes: ['name'] }, // Dołączamy model Patient i pobieramy atrybut "name"
         ],
       });
       if (!session) {
@@ -44,6 +47,7 @@ module.exports = {
       res.status(500).json({ error: error.message });
     }
   },
+
 
   // Aktualizacja sesji
   updateSession: async (req, res) => {

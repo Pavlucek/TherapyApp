@@ -8,6 +8,7 @@ const notesRoutes = require('./routes/notesRoutes');
 const journalRoutes = require('./routes/journalRoutes');
 const tagRoutes = require('./routes/tagRoutes');
 const StatsRoutes = require('./routes/statsRoutes');
+const patientRoutes = require('./routes/patientRoutes');
 const sharedMaterialsRoutes = require('./routes/sharedMaterialsRoutes');
 const sessionRoutes = require('./routes/sessionRoutes');
 const { sequelize } = require('./models');
@@ -27,6 +28,7 @@ app.use('/journal', journalRoutes);
 app.use('/api', StatsRoutes);
 app.use('/materials', sharedMaterialsRoutes);
 app.use('/sessions', sessionRoutes);
+app.use('/patients', patientRoutes);
 app.use('/tags', tagRoutes);
 
 // Start the server
