@@ -2,6 +2,7 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import TherapistChatScreen from '../screens/TherapistChatScreen';
+import TherapistChatDetailScreen from '../screens/TherapistChatDetailScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -17,7 +18,13 @@ const TherapistChatStack = () => {
       <Stack.Screen
         name="TherapistChat"
         component={TherapistChatScreen}
-        options={{ title: '' }}
+        options={{ title: '', headerShown: false }}
+      />
+
+<Stack.Screen
+        name="TherapistChatDetail"
+        component={TherapistChatDetailScreen}
+        options={{ title: '', headerShown: false }}
       />
     </Stack.Navigator>
   );

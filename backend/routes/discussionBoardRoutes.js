@@ -25,6 +25,12 @@ router.put(
   discussionBoardController.editMessage,
 );
 
+router.get(
+  '/assigned',
+  authMiddleware(['therapist']),
+  discussionBoardController.getAssignedPatients,
+);
+
 router.put(
   '/:id/read',
   authMiddleware(['therapist', 'patient']),

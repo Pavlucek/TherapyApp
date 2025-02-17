@@ -61,36 +61,60 @@ const getMaterials = async (req, res) => {
     let materials;
 
     if (role === 'patient') {
-      // Pobieranie pacjenta na podstawie user_id
+      // Dla pacjenta – pobieramy materiały z SharedResource
       const patient = await Patient.findOne({ where: { user_id: userId } });
-
       if (!patient) {
         return res.status(400).json({ error: 'Patient not found for this user' });
       }
-
       const patientId = patient.id;
-
       console.log('Fetching materials for patient with patientId:', patientId);
 
       materials = await SharedResource.findAll({
         where: { patient_id: patientId },
-        include: [{
-          model: Resource,
-        }],
+        include: [{ model: Resource }],
       });
-
       console.log('Materials for patient:', materials);
-
     } else if (role === 'therapist') {
+      // Dla terapeuty – pobieramy materiały utworzone przez niego
+      // Zakładamy, że użytkownik-terapeuta jest powiązany z rekordem w modelu Therapist.
+      // Jeśli chcesz, możesz również wyszukać rekord terapeuty, ale tu upraszczamy,
+      // zakładając, że pole userId jest używane jako therapist_id.
       const therapistId = userId;
-
       console.log('Fetching materials for therapist with therapistId:', therapistId);
 
       materials = await Resource.findAll({
         where: { therapist_id: therapistId },
+        include: [
+          {
+            model: SharedResource,
+            include: [
+              {
+                model: Patient,
+                include: [
+                  {
+                    model: User,
+                    attributes: ['email', 'therapist_code', 'role'], // lub inne pola, np. 'name'
+                  },
+                ],
+              },
+            ],
+          },
+        ],
       });
 
-      console.log('Materials for therapist:', materials);
+      // Przekształcamy wynik, aby dla każdego materiału dodać nowe pole "sharedTo"
+      materials = materials.map(material => {
+        const sharedTo = material.SharedResources
+          ? material.SharedResources.map(sr => {
+              // Jeśli Patient i powiązany User istnieją, zwróć nazwę (lub inny identyfikator)
+              return sr.Patient && sr.Patient.User ? sr.Patient.User.email : null;
+            }).filter(name => name) // usuwamy null
+          : [];
+        material.dataValues.sharedTo = sharedTo;
+        return material;
+      });
+
+      console.log('Materials for therapist (with sharedTo):', materials);
     }
 
     res.status(200).json(materials);

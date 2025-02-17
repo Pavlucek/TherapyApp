@@ -1,4 +1,38 @@
-const {DiscussionBoard, Therapist} = require('../models');
+const {DiscussionBoard, Therapist, Patient, User} = require('../models');
+
+const getAssignedPatients = async (req, res) => {
+  try {
+    if (req.user.role !== 'therapist') {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+    const therapist = await Therapist.findOne({
+      where: { user_id: req.user.id },
+    });
+    if (!therapist) {
+      console.log('Brak terapeuty dla user_id:', req.user.id);
+      return res.status(404).json({ message: 'Therapist not found' });
+    }
+
+    const therapistId = therapist.id;
+    console.log('Therapist ID from DB:', therapistId);
+
+    const patients = await Patient.findAll({
+      where: { therapist_id: therapistId },
+      include: [{
+        model: User,
+        attributes: ['email', 'role'],
+      }],
+      order: [['name', 'ASC']],
+    });
+    console.log('Znalezione pacjenci:', patients);
+    res.json(patients);
+  } catch (error) {
+    console.error('Błąd w getAssignedPatients:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 
 const getMessages = async (req, res) => {
   const {patient_id, therapist_id} = req.query;
@@ -140,4 +174,5 @@ module.exports = {
   editMessage,
   markAsRead,
   getTherapist,
+  getAssignedPatients,
 };

@@ -38,6 +38,7 @@ const Reflection = require('./reflection')(sequelize, DataTypes);
 // 1. User i modele powiązane
 User.hasOne(Therapist, { foreignKey: 'user_id' });
 User.hasOne(Patient, { foreignKey: 'user_id' });
+Patient.belongsTo(User, { foreignKey: 'user_id' });
 User.hasMany(CommentMaterials, { foreignKey: 'user_id' });
 CommentMaterials.belongsTo(User, { foreignKey: 'user_id' });
 User.hasMany(FavoriteMaterials, { foreignKey: 'user_id' });

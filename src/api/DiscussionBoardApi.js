@@ -123,3 +123,20 @@ export const getTherapist = async (token, therapistId) => {
       throw error;
     }
   };
+
+  // Pobiera listę pacjentów przypisanych do terapeuty
+export const getAssignedPatients = async (token) => {
+  console.log(`[getAssignedPatients] Called with token: ${token}`);
+  try {
+    const response = await axios.get(`${API_URL}/discussion-board/assigned`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    console.log('[getAssignedPatients] Successfully fetched assigned patients:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('[getAssignedPatients] Error fetching assigned patients:', error.message);
+    throw error;
+  }
+};
