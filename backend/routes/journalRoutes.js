@@ -40,4 +40,6 @@ router.post('/:id/tags/:tagId', authMiddleware(['patient']), journalEntryControl
 // Usunięcie istniejącego Tag z wpisu
 router.delete('/:id/tags/:tagId', authMiddleware(['patient']), journalEntryController.removeTagFromEntry);
 
+router.get('/patient/:patientId/shared', authMiddleware(['patient', 'therapist']), journalEntryController.getSharedJournalEntriesForPatient);
+
 module.exports = router;

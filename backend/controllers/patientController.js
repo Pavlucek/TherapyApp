@@ -27,4 +27,27 @@ const getAssignedPatients = async (req, res) => {
   }
 };
 
-module.exports = { getAssignedPatients };
+const getPatientDetails = async (req, res) => {
+    try {
+      const { patientId } = req.params;
+      const patient = await Patient.findByPk(patientId, {
+        include: [
+          {
+            model: User,
+            attributes: ['email'], // Dodaj tutaj inne pola, które chcesz zwrócić
+          },
+        ],
+      });
+
+      if (!patient) {
+        return res.status(404).json({ message: 'Pacjent nie został znaleziony.' });
+      }
+
+      res.json(patient);
+    } catch (error) {
+      console.error('[getPatientDetails] Błąd:', error);
+      res.status(500).json({ error: error.message });
+    }
+  };
+
+module.exports = { getAssignedPatients, getPatientDetails };
