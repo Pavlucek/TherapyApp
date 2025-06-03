@@ -95,9 +95,8 @@ const TherapistAddSessionScreen = ({ navigation }) => {
       location,
       notes,
       meetingLink,
-      // Jeśli wybrano pacjenta, przekazujemy jego ID
       ...(selectedPatient && { patient_id: selectedPatient.id }),
-      therapist_id: user.id, // Zakładamy, że user.id odpowiada ID terapeuty
+      therapist_id: user.therapistId, // Używamy właściwości therapistId z usera
     };
 
     try {

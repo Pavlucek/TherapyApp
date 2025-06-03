@@ -2,6 +2,7 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import TherapistHomeScreen from '../screens/TherapistHomeScreen';
+import TherapistPatientDetails from '../screens/TherapistPatientDetailsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -17,7 +18,12 @@ const TherapistHomeStack = () => {
       <Stack.Screen
         name="TherapistHome"
         component={TherapistHomeScreen}
-        options={{ title: '' }}
+        options={{ title: '', headerShown: false }}
+      />
+      <Stack.Screen
+        name="TherapistPatientDetails"
+        component={TherapistPatientDetails}
+        options={{ title: 'Szczegóły pacjenta' }}
       />
     </Stack.Navigator>
   );

@@ -9,6 +9,7 @@ import {
   RefreshControl,
   TextInput,
   Modal,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -118,6 +119,32 @@ const TherapistSessionScreen = ({ navigation }) => {
     }
   };
 
+  // Funkcja usuwania sesji
+  const handleDeleteSession = (sessionId) => {
+    Alert.alert(
+      'Potwierdzenie',
+      'Czy na pewno chcesz usunąć tę sesję?',
+      [
+        { text: 'Anuluj', style: 'cancel' },
+        {
+          text: 'Usuń',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await sessionsApi.deleteSession(sessionId, user.token);
+              Alert.alert('Sukces', 'Sesja została usunięta.');
+              fetchSessions();
+            } catch (error) {
+              Alert.alert('Błąd', 'Nie udało się usunąć sesji.');
+              console.error('[TherapistSessionScreen] Błąd usuwania sesji:', error.message);
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
   // Aktualizacja statusu sesji (akceptacja lub odrzucenie)
   const updateSessionStatus = async (sessionId, newStatus) => {
     try {
@@ -150,11 +177,17 @@ const TherapistSessionScreen = ({ navigation }) => {
         {item.startTime} - {item.endTime}
       </Text>
       <Text style={styles.sessionStatus}>
-        Status: {STATUS_MAP[item.status] || item.status}
+        Stan: {STATUS_MAP[item.status] || item.status}
       </Text>
       <Text style={styles.sessionLocation}>
         Lokalizacja: {item.location || 'Online'}
       </Text>
+      {/* Wyświetlenie danych pacjenta, jeśli dostępne */}
+      {item.Patient && (
+        <Text style={styles.patientInfo}>
+          Dotyczy pacjenta: {item.Patient.name}
+        </Text>
+      )}
       {/* Jeśli sesja jest oczekująca, wyświetl przyciski akceptacji/odrzucenia */}
       {item.status.toLowerCase() === 'pending' && (
         <View style={styles.actionRow}>
@@ -171,6 +204,15 @@ const TherapistSessionScreen = ({ navigation }) => {
             <Text style={styles.actionButtonText}>Odrzuć</Text>
           </TouchableOpacity>
         </View>
+      )}
+      {/* Przycisk usuwania sesji (tylko dla terapeutów) */}
+      {user.role === 'therapist' && (
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => handleDeleteSession(item.id)}
+        >
+          <Ionicons name="trash-outline" size={20} color="#DC3545" />
+        </TouchableOpacity>
       )}
     </TouchableOpacity>
   );
@@ -382,10 +424,13 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   sessionCard: {
+    backgroundColor: '#F0F8FF',
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
+    borderColor: '#ccc',
+    position: 'relative',
   },
   sessionHeader: {
     flexDirection: 'row',
@@ -411,6 +456,12 @@ const styles = StyleSheet.create({
   sessionLocation: {
     fontSize: 14,
     color: '#555',
+  },
+  patientInfo: {
+    fontSize: 16,
+    color: '#07435D',
+    marginTop: 8,
+    fontWeight: 'bold',
   },
   defaultSessionCard: {
     backgroundColor: '#F0F8FF',
@@ -448,30 +499,10 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
   },
-  fullScreenModal: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalHeader: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#07435D',
-  },
-  fullScreenPicker: {
-    width: '100%',
-  },
-  fullScreenButton: {
-    marginTop: 20,
-    padding: 15,
-    backgroundColor: '#07435D',
-    borderRadius: 8,
-  },
-  fullScreenButtonText: {
-    color: '#ffffff',
-    fontSize: 18,
+  deleteButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
   },
 });
 

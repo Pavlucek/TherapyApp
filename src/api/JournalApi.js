@@ -168,3 +168,18 @@ export const removeTagFromEntry = async (token, entryId, tagId) => {
     throw error;
   }
 };
+
+export const getSharedJournalEntriesForPatient = async (patientId, token) => {
+  const url = `${API_URL}/patient/${patientId}/shared`;
+  logRequest('getSharedJournalEntriesForPatient', url);
+  try {
+    const response = await axios.get(url, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    logResponse('getSharedJournalEntriesForPatient', response);
+    return response.data;
+  } catch (error) {
+    logError('getSharedJournalEntriesForPatient', error);
+    throw error;
+  }
+};

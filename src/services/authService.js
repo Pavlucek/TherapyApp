@@ -104,38 +104,35 @@ export const updateUserDetails = async (token, updatedUser) => {
 
 export const registerTherapist = async (adminToken, therapistData) => {
   try {
-    const response = await axios.post(
-      `${API_URL}/auth/register/therapist`,
-      therapistData,
-      {
-        headers: {
-          Authorization: `Bearer ${adminToken}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    console.log('Registering therapist with data:', therapistData);
+    const response = await axios.post(`${API_URL}/auth/register/therapist`, therapistData, {
+      headers: {
+        Authorization: `Bearer ${adminToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    console.log('Therapist registration response:', response.data);
     return response.data;
   } catch (error) {
-    console.error('Error registering therapist:', error.message);
+    console.error('Error registering therapist:', error.response?.data || error.message);
     throw error;
   }
 };
 
+
 export const registerPatient = async (token, patientData) => {
   try {
-    const response = await axios.post(
-      `${API_URL}/auth/register/patient`,
-      patientData,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    console.log('Registering patient with data:', patientData);
+    const response = await axios.post(`${API_URL}/auth/register/patient`, patientData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    console.log('Patient registration response:', response.data);
     return response.data;
   } catch (error) {
-    console.error('Error registering patient:', error.message);
+    console.error('Error registering patient:', error.response?.data || error.message);
     throw error;
   }
 };
@@ -161,5 +158,22 @@ export const changePassword = async (token, oldPassword, newPassword) => {
   } catch (error) {
     console.error('Error changing password:', error.message);
     throw new Error(error.response?.data?.message || 'Failed to change password');
+  }
+};
+
+export const deleteUser = async (adminToken, userId) => {
+  try {
+    console.log(`Wysyłam żądanie usunięcia użytkownika o ID: ${userId}`);
+    const response = await axios.delete(`${API_URL}/user/admin/users/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${adminToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    console.log('User deletion response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting user:', error.response?.data || error.message);
+    throw error;
   }
 };

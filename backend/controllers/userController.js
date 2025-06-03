@@ -275,7 +275,19 @@ const getMoodHistory = async (req, res) => {
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.findAll({
-      attributes: ['id', 'email', 'role'], // Pobiera tylko potrzebne pola
+      attributes: ['id', 'email', 'role'], // Pobieramy podstawowe dane użytkownika
+      include: [
+        {
+          model: Patient,
+          attributes: ['name'],
+          required: false, // Użytkownik może nie mieć powiązanego rekordu w Patient
+        },
+        {
+          model: Therapist,
+          attributes: ['name'],
+          required: false, // Użytkownik może nie mieć powiązanego rekordu w Therapist
+        },
+      ],
     });
 
     res.status(200).json(users);
@@ -284,6 +296,9 @@ const getAllUsers = async (req, res) => {
     res.status(500).json({ message: 'Błąd serwera' });
   }
 };
+
+module.exports = { getAllUsers };
+
 
 const getTherapists = async (req, res) => {
   try {
@@ -348,6 +363,33 @@ const assignPatient = async (req, res) => {
 };
 
 
+const deleteUser = async (req, res) => {
+  const userId = req.params.userId;
+  try {
+    // Znajdź użytkownika po ID
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Opcjonalnie: jeśli użytkownik ma powiązane rekordy (np. Patient lub Therapist), można je usunąć lub zaktualizować.
+    // Dla przykładu, jeśli rola to 'patient', usuń powiązany rekord z modelu Patient:
+    if (user.role === 'patient') {
+      await Patient.destroy({ where: { user_id: userId } });
+    }
+    if (user.role === 'therapist') {
+      await Therapist.destroy({ where: { user_id: userId } });
+    }
+
+    // Usuń użytkownika
+    await user.destroy();
+
+    res.status(200).json({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 
 module.exports = {
   updateUserDetails,
@@ -362,4 +404,5 @@ module.exports = {
   getTherapists,
   assignPatient,
   getPatients,
+  deleteUser,
 };

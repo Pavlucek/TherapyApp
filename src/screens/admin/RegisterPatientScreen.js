@@ -1,5 +1,5 @@
 // src/screens/admin/RegisterPatientScreen.js
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,34 +9,73 @@ import {
   Alert,
   Modal,
   Button,
+  Platform,
+  ScrollView,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { AuthContext } from '../../context/AuthContext';
 import { registerPatient } from '../../services/authService';
+import { fetchTherapists } from '../../api/therapistsApi';
 
 const RegisterPatientScreen = () => {
   const { user: currentUser } = useContext(AuthContext);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [patientName, setPatientName] = useState('');
-  const [patientDateOfBirth, setPatientDateOfBirth] = useState('');
+  const [patientDateOfBirth, setPatientDateOfBirth] = useState(null);
   const [contact, setContact] = useState('');
   const [patientAddress, setPatientAddress] = useState('');
   const [patientGender, setPatientGender] = useState('');
   const [emergencyContact, setEmergencyContact] = useState('');
-  const [therapistId, setTherapistId] = useState('');
+  const [selectedTherapist, setSelectedTherapist] = useState('');
+
   const [showGenderPicker, setShowGenderPicker] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTherapistPicker, setShowTherapistPicker] = useState(false);
+
+  // Lista terapeutów pobrana z backendu
+  const [therapists, setTherapists] = useState([]);
+
+  useEffect(() => {
+    if (currentUser && currentUser.token) {
+      fetchTherapists(currentUser.token)
+        .then((data) => {
+          setTherapists(data);
+        })
+        .catch((error) => {
+          console.error('Błąd pobierania terapeutów:', error);
+        });
+    }
+  }, [currentUser]);
 
   const clearFields = () => {
     setEmail('');
     setPassword('');
     setPatientName('');
-    setPatientDateOfBirth('');
+    setPatientDateOfBirth(null);
     setContact('');
     setPatientAddress('');
     setPatientGender('');
     setEmergencyContact('');
-    setTherapistId('');
+    setSelectedTherapist('');
+  };
+
+  const formatDate = (date) => {
+    if (!date) {return '';}
+    const year = date.getFullYear();
+    let month = date.getMonth() + 1;
+    let day = date.getDate();
+    if (month < 10) {month = '0' + month;}
+    if (day < 10) {day = '0' + day;}
+    return `${year}-${month}-${day}`;
+  };
+
+  const onDateChange = (event, selectedDate) => {
+    if (selectedDate) {
+      setPatientDateOfBirth(selectedDate);
+    }
+    setShowDatePicker(false);
   };
 
   const handleRegister = async () => {
@@ -58,13 +97,13 @@ const RegisterPatientScreen = () => {
         email,
         password,
         name: patientName,
-        date_of_birth: patientDateOfBirth,
+        date_of_birth: formatDate(patientDateOfBirth),
         contact,
         address: patientAddress,
         medical_history: '', // domyślna wartość
         gender: patientGender,
         emergency_contact: emergencyContact,
-        therapist_id: currentUser.role === 'admin' ? therapistId : undefined,
+        therapist_id: selectedTherapist ? parseInt(selectedTherapist, 10) : null,
       });
       Alert.alert('Sukces', 'Pacjent został zarejestrowany');
       clearFields();
@@ -75,7 +114,7 @@ const RegisterPatientScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Rejestracja Pacjenta</Text>
       <TextInput
         style={styles.input}
@@ -101,13 +140,27 @@ const RegisterPatientScreen = () => {
         onChangeText={setPatientName}
         placeholderTextColor="#777"
       />
-      <TextInput
-        style={styles.input}
-        placeholder="Data urodzenia (RRRR-MM-DD)"
-        value={patientDateOfBirth}
-        onChangeText={setPatientDateOfBirth}
-        placeholderTextColor="#777"
-      />
+
+      {/* Wybór daty urodzenia */}
+      <Text style={styles.label}>Data urodzenia</Text>
+      <TouchableOpacity
+        style={styles.pickerButton}
+        onPress={() => setShowDatePicker(true)}
+      >
+        <Text style={styles.pickerButtonText}>
+          {patientDateOfBirth ? formatDate(patientDateOfBirth) : 'Wybierz datę urodzenia'}
+        </Text>
+      </TouchableOpacity>
+      {showDatePicker && (
+        <DateTimePicker
+          value={patientDateOfBirth || new Date()}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'inline' : 'default'}
+          onChange={onDateChange}
+          maximumDate={new Date()}
+        />
+      )}
+
       <TextInput
         style={styles.input}
         placeholder="Kontakt"
@@ -123,7 +176,7 @@ const RegisterPatientScreen = () => {
         placeholderTextColor="#777"
       />
 
-      {/* Zamiast pola tekstowego dla płci, używamy przycisku otwierającego modal */}
+      {/* Wybór płci */}
       <Text style={styles.label}>Płeć</Text>
       <TouchableOpacity
         style={styles.pickerButton}
@@ -141,29 +194,6 @@ const RegisterPatientScreen = () => {
             : 'Wybierz płeć'}
         </Text>
       </TouchableOpacity>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Kontakt awaryjny"
-        value={emergencyContact}
-        onChangeText={setEmergencyContact}
-        placeholderTextColor="#777"
-      />
-      {currentUser.role === 'admin' && (
-        <TextInput
-          style={styles.input}
-          placeholder="ID terapeuty"
-          value={therapistId}
-          onChangeText={setTherapistId}
-          keyboardType="numeric"
-          placeholderTextColor="#777"
-        />
-      )}
-      <TouchableOpacity style={styles.primaryButton} onPress={handleRegister}>
-        <Text style={styles.primaryButtonText}>Zarejestruj</Text>
-      </TouchableOpacity>
-
-      {/* Modal do wyboru płci */}
       <Modal
         visible={showGenderPicker}
         transparent={true}
@@ -188,13 +218,69 @@ const RegisterPatientScreen = () => {
           </View>
         </View>
       </Modal>
-    </View>
+
+      {/* Wybór terapeuty */}
+      <Text style={styles.label}>Terapeuta</Text>
+      <TouchableOpacity
+        style={styles.pickerButton}
+        onPress={() => setShowTherapistPicker(true)}
+      >
+        <Text style={styles.pickerButtonText}>
+          {selectedTherapist
+            ? therapists.find(
+                (t) =>
+                  t.Therapist.id === parseInt(selectedTherapist, 10)
+              )?.Therapist.name || `Terapeuta ${selectedTherapist}`
+            : 'Wybierz terapeutę'}
+        </Text>
+      </TouchableOpacity>
+      <Modal
+        visible={showTherapistPicker}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowTherapistPicker(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Wybierz terapeutę</Text>
+            <Picker
+              selectedValue={selectedTherapist || ''}
+              onValueChange={(itemValue) => {
+                setSelectedTherapist(itemValue);
+              }}
+            >
+              <Picker.Item label="Wybierz terapeutę" value="" />
+              {therapists.map((therapist) => (
+                <Picker.Item
+                  key={therapist.Therapist.id}
+                  label={therapist.Therapist.name}
+                  value={therapist.Therapist.id.toString()}
+                />
+              ))}
+            </Picker>
+            <Button title="Zamknij" onPress={() => setShowTherapistPicker(false)} />
+          </View>
+        </View>
+      </Modal>
+
+      <TextInput
+        style={styles.input}
+        placeholder="Kontakt awaryjny"
+        value={emergencyContact}
+        onChangeText={setEmergencyContact}
+        placeholderTextColor="#777"
+      />
+
+      <TouchableOpacity style={styles.primaryButton} onPress={handleRegister}>
+        <Text style={styles.primaryButtonText}>Zarejestruj</Text>
+      </TouchableOpacity>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: '#f5f5f9',
     padding: 20,
     justifyContent: 'center',

@@ -40,15 +40,83 @@ const EditProfileScreen = ({ navigation }) => {
     return `${year}-${month}-${day}`;
   };
 
-  // Funkcje walidujące
-  const validateName = (name) => name.length >= 3 && name.length <= 30;
-  const validateContact = (contact) => contact.length > 0;
-  const validateAddress = (address) => address.length > 0;
-  const validateDateOfBirth = (date) => date !== null;
-  const validateGender = (gender) =>
-    ['male', 'female', 'other'].includes(gender.toLowerCase());
-  const validateEmergencyContact = (emergency_contact) =>
-    emergency_contact.length > 0;
+// Walidacja imienia
+const validateName = (name) => {
+  if (!name || name.trim().length === 0) {
+    return { valid: false, message: 'Imię jest wymagane.' };
+  }
+  if (name.trim().length < 3 || name.trim().length > 30) {
+    return { valid: false, message: 'Imię musi mieć od 3 do 30 znaków.' };
+  }
+  return { valid: true };
+};
+
+// Walidacja numeru telefonu (kontakt)
+const validateContact = (contact) => {
+  if (!contact || contact.trim().length === 0) {
+    return { valid: false, message: 'Kontakt jest wymagany.' };
+  }
+  // Wyrażenie regularne sprawdzające numer telefonu: od 7 do 15 cyfr, opcjonalnie poprzedzone znakiem +
+  const phoneRegex = /^\+?[0-9]{7,15}$/;
+  if (!phoneRegex.test(contact.trim())) {
+    return {
+      valid: false,
+      message: 'Wprowadź poprawny numer telefonu (7-15 cyfr, opcjonalnie z + na początku).',
+    };
+  }
+  return { valid: true };
+};
+
+// Walidacja adresu
+const validateAddress = (address) => {
+  if (!address || address.trim().length === 0) {
+    return { valid: false, message: 'Adres jest wymagany.' };
+  }
+  return { valid: true };
+};
+
+// Walidacja daty urodzenia
+const validateDateOfBirth = (date) => {
+  if (!date) {
+    return { valid: false, message: 'Data urodzenia jest wymagana.' };
+  }
+  const today = new Date();
+  if (date > today) {
+    return { valid: false, message: 'Data urodzenia nie może być w przyszłości.' };
+  }
+  return { valid: true };
+};
+
+// Walidacja płci
+const validateGender = (gender) => {
+  if (!gender) {
+    return { valid: false, message: 'Płeć jest wymagana.' };
+  }
+  const allowed = ['male', 'female', 'other'];
+  if (!allowed.includes(gender.toLowerCase())) {
+    return {
+      valid: false,
+      message: 'Wybierz poprawną płeć: male, female lub other.',
+    };
+  }
+  return { valid: true };
+};
+
+// Walidacja kontaktu awaryjnego
+const validateEmergencyContact = (emergency_contact) => {
+  if (!emergency_contact || emergency_contact.trim().length === 0) {
+    return { valid: false, message: 'Kontakt awaryjny jest wymagany.' };
+  }
+  const phoneRegex = /^\+?[0-9]{7,15}$/;
+  if (!phoneRegex.test(emergency_contact.trim())) {
+    return {
+      valid: false,
+      message: 'Wprowadź poprawny numer telefonu dla kontaktu awaryjnego (7-15 cyfr, opcjonalnie z + na początku).',
+    };
+  }
+  return { valid: true };
+};
+
 
   const handleSaveChanges = async () => {
     if (!validateName(updatedUser.name)) {

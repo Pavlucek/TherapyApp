@@ -51,6 +51,12 @@ router.get(
   userController.getPatients
 );
 
+router.delete(
+  '/admin/users/:userId',
+  authMiddleware(['admin']),
+  userController.deleteUser
+);
+
 // Nowe endpointy dla operacji administracyjnych:
 router.get(
   '/admin/users/:userId',

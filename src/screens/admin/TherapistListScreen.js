@@ -1,6 +1,5 @@
 // src/screens/TherapistListScreen.js
-
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,12 +8,12 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { AuthContext } from '../../context/AuthContext'; // Upewnij się, że ścieżka jest poprawna
-import { fetchTherapists } from '../../api/therapistsApi'; // Upewnij się, że ścieżka jest poprawna
-import buttonStyles from '../../styles/ButtonStyles'; // Import stylów przycisku
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { AuthContext } from '../../context/AuthContext';
+import { fetchTherapists } from '../../api/therapistsApi';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import buttonStyles from '../../styles/ButtonStyles';
 
-// Funkcja pomocnicza zamieniająca role na polskie odpowiedniki
 const getPolishRole = (role) => {
   switch (role) {
     case 'admin':
@@ -34,27 +33,36 @@ const TherapistListScreen = () => {
 
   const [therapists, setTherapists] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
 
-  // Upewniamy się, że token jest dostępny przed pobraniem danych
+  const loadData = async () => {
+    try {
+      const data = await fetchTherapists(authUser.token);
+      setTherapists(data);
+      setError(null);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
   useEffect(() => {
     if (authUser && authUser.token) {
-      async function loadData() {
-        try {
-          console.log('[TherapistListScreen] Token:', authUser?.token);
-          const data = await fetchTherapists(authUser.token);
-          setTherapists(data);
-        } catch (err) {
-          setError(err);
-        } finally {
-          setLoading(false);
-        }
-      }
       loadData();
     }
   }, [authUser]);
 
-  if (loading) {
+  useFocusEffect(
+    useCallback(() => {
+      console.log('[TherapistListScreen] Ekran aktywny – odświeżam dane terapeutyczne');
+      loadData();
+    }, [authUser])
+  );
+
+  if (loading && !refreshing) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#0b4a60" />
@@ -70,7 +78,6 @@ const TherapistListScreen = () => {
     );
   }
 
-  // Renderowanie pojedynczego elementu listy terapeuty w formie "karty"
   const renderItem = ({ item }) => {
     const therapistDetails = item.Therapist;
     return (
@@ -111,13 +118,19 @@ const TherapistListScreen = () => {
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
         contentContainerStyle={styles.listContainer}
+        onRefresh={() => {
+          setRefreshing(true);
+          loadData();
+        }}
+        refreshing={refreshing}
       />
-      {/* Przycisk przekierowujący do ekranu przypisywania pacjenta */}
+
+      {/* Floating Action Button – absolutnie pozycjonowany */}
       <TouchableOpacity
-        style={buttonStyles.primaryButton}
+        style={styles.floatingButton}
         onPress={() => navigation.navigate('AssignPatient')}
       >
-        <Text style={buttonStyles.primaryButtonText}>Przypisz pacjenta</Text>
+        <Ionicons name="person-add-outline" size={30} color="white" />
       </TouchableOpacity>
     </View>
   );
@@ -154,7 +167,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 15,
     marginBottom: 15,
-    // Delikatny cień, aby dodać głębi
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -192,6 +204,20 @@ const styles = StyleSheet.create({
   patientText: {
     fontSize: 14,
     color: '#0b4a60',
+  },
+  floatingButton: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    backgroundColor: '#07435D',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 30,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
   },
 });
 

@@ -50,4 +50,34 @@ const getPatientDetails = async (req, res) => {
     }
   };
 
-module.exports = { getAssignedPatients, getPatientDetails };
+const getPatientModelInfo = async (req, res) => {
+  try {
+    const { patientId } = req.params;
+    // Removed attribute selection to return all attributes
+    const patient = await Patient.findByPk(patientId);
+    if (!patient) {
+      return res.status(404).json({ message: 'Pacjent nie został znaleziony.' });
+    }
+    res.json(patient);
+  } catch (error) {
+    console.error('[getPatientModelInfo] Błąd:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const getTherapistModelInfo = async (req, res) => {
+  try {
+    const { therapistId } = req.params;
+    // Removed attribute selection to return all attributes
+    const therapist = await Therapist.findByPk(therapistId);
+    if (!therapist) {
+      return res.status(404).json({ message: 'Terapeuta nie został znaleziony.' });
+    }
+    res.json(therapist);
+  } catch (error) {
+    console.error('[getTherapistModelInfo] Błąd:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports = { getAssignedPatients, getPatientDetails, getPatientModelInfo, getTherapistModelInfo };

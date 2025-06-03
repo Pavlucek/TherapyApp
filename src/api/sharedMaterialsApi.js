@@ -1,3 +1,4 @@
+// sharedMaterialsApi.js
 import axios from 'axios';
 
 const API_URL = 'http://localhost:3000'; // lub inny adres Twojego backendu
@@ -22,7 +23,6 @@ export const getMaterials = async (token) => {
 // Dodawanie nowego materiału (tylko terapeuta)
 export const addMaterial = async (token, materialData) => {
   console.log('[addMaterial] Wywołanie endpointu POST /materials z danymi:', materialData);
-  // materialData powinno zawierać: title, description, url, content, contentType, patient_ids (opcjonalnie)
   try {
     const response = await axios.post(`${API_URL}/materials`, materialData, {
       headers: {

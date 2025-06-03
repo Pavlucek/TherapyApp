@@ -1,24 +1,33 @@
-import { useState, useEffect } from 'react';
+// src/hooks/useUsers.js
+import { useState, useEffect, useCallback } from 'react';
 import { fetchUsersFromApi } from '../api/userApi';
 
 const useUsers = (token) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!token) {return;} // Jeśli nie ma tokena, nie pobieramy danych
-
-    const loadUsers = async () => {
-      setLoading(true);
+  const loadUsers = useCallback(async () => {
+    if (!token) {
+      console.log('Brak tokena – nie pobieram użytkowników');
+      return;
+    }
+    console.log('Rozpoczynam pobieranie użytkowników...');
+    setLoading(true);
+    try {
       const data = await fetchUsersFromApi(token);
+      console.log('Pobrane dane użytkowników:', data);
       setUsers(data);
-      setLoading(false);
-    };
-
-    loadUsers();
+    } catch (error) {
+      console.error('Błąd pobierania użytkowników:', error);
+    }
+    setLoading(false);
   }, [token]);
 
-  return { users, loading };
+  useEffect(() => {
+    loadUsers();
+  }, [token, loadUsers]);
+
+  return { users, loading, refetch: loadUsers };
 };
 
 export default useUsers;

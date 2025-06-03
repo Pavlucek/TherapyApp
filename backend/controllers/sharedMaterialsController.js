@@ -54,7 +54,6 @@ const addMaterial = async (req, res) => {
 // Przegląd materiałów – dostępne zarówno dla pacjentów, jak i terapeutów
 const getMaterials = async (req, res) => {
   const { role, id: userId } = req.user;
-
   console.log('Fetching materials for user:', { role, userId });
 
   try {
@@ -75,11 +74,12 @@ const getMaterials = async (req, res) => {
       });
       console.log('Materials for patient:', materials);
     } else if (role === 'therapist') {
-      // Dla terapeuty – pobieramy materiały utworzone przez niego
-      // Zakładamy, że użytkownik-terapeuta jest powiązany z rekordem w modelu Therapist.
-      // Jeśli chcesz, możesz również wyszukać rekord terapeuty, ale tu upraszczamy,
-      // zakładając, że pole userId jest używane jako therapist_id.
-      const therapistId = userId;
+      // Dla terapeuty – najpierw pobieramy rekord terapeuty na podstawie user_id
+      const therapistRecord = await Therapist.findOne({ where: { user_id: userId } });
+      if (!therapistRecord) {
+        return res.status(400).json({ error: 'Rekord terapeuty nie został znaleziony dla tego użytkownika' });
+      }
+      const therapistId = therapistRecord.id;
       console.log('Fetching materials for therapist with therapistId:', therapistId);
 
       materials = await Resource.findAll({
@@ -93,7 +93,7 @@ const getMaterials = async (req, res) => {
                 include: [
                   {
                     model: User,
-                    attributes: ['email', 'therapist_code', 'role'], // lub inne pola, np. 'name'
+                    attributes: ['email', 'therapist_code', 'role'],
                   },
                 ],
               },
@@ -102,18 +102,16 @@ const getMaterials = async (req, res) => {
         ],
       });
 
-      // Przekształcamy wynik, aby dla każdego materiału dodać nowe pole "sharedTo"
+      // Dodajemy nowe pole "sharedTo" do każdego materiału
       materials = materials.map(material => {
         const sharedTo = material.SharedResources
-          ? material.SharedResources.map(sr => {
-              // Jeśli Patient i powiązany User istnieją, zwróć nazwę (lub inny identyfikator)
-              return sr.Patient && sr.Patient.User ? sr.Patient.User.email : null;
-            }).filter(name => name) // usuwamy null
+          ? material.SharedResources
+              .map(sr => sr.Patient && sr.Patient.User ? sr.Patient.User.email : null)
+              .filter(email => email)
           : [];
         material.dataValues.sharedTo = sharedTo;
         return material;
       });
-
       console.log('Materials for therapist (with sharedTo):', materials);
     }
 
